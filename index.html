@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>netttt</title>
+  </head>
+  <body>
+    <canvas id="board" width="300" height="300"></canvas>
+    <p id="winner"></p>
+
+    <script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+    <script src="src/ttt.js"></script>
+    <script>
+      $(function () {
+        var board = $('#board');
+        var game = new Ttt.Game();
+
+        function redraw(highlightPiece) {
+          game.draw(board[0].getContext('2d'), board.width(), board.height(), 0, 0, highlightPiece);
+        }
+
+        function getSquare(x, y) {
+          var col = (x - board.offset().left) / board.width() * 3 | 0;
+          var row = (y - board.offset().top) / board.height() * 3 | 0;
+          return col + row * 3;
+        }
+
+        board.mousemove(function (event) {
+          if (game.winner() === 0)
+            redraw(getSquare(event.pageX, event.pageY));
+        });
+
+        board.mouseleave(function (event) {
+          redraw();
+        });
+
+        board.click(function (event) {
+          var square = getSquare(event.pageX, event.pageY);
+          if (game.winner() === 0 && game.getPiece(square) === 0) {
+            game.move(square);
+
+            switch (game.winner()) {
+            case Ttt.X:
+              $('#winner').text('X wins!');
+              break;
+
+            case Ttt.O:
+              $('#winner').text('O wins!');
+              break;
+
+            case Ttt.TIE:
+              $('#winner').text("Cat's game");
+              break;
+            }
+          }
+
+          redraw();
+        });
+
+        redraw();
+      });
+    </script>
+  </body>
+</html>
