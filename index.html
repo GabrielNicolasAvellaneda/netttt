@@ -7,13 +7,16 @@
   <body>
     <canvas id="board" width="300" height="300"></canvas>
     <p id="winner"></p>
+    <p id="debug"></p>
 
     <script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
     <script src="src/ttt.js"></script>
+    <script src="src/ai.js"></script>
     <script>
       $(function () {
         var board = $('#board');
         var game = new Ttt.Game();
+        var ai = new Ai.Smart();
 
         function redraw(highlightPiece) {
           game.draw(board[0].getContext('2d'), board.width(), board.height(), 0, 0, highlightPiece);
@@ -23,6 +26,26 @@
           var col = (x - board.offset().left) / board.width() * 3 | 0;
           var row = (y - board.offset().top) / board.height() * 3 | 0;
           return col + row * 3;
+        }
+
+        function move(square) {
+          game.move(square);
+
+          switch (game.winner()) {
+          case Ttt.X:
+            $('#winner').text('X wins!');
+            break;
+
+          case Ttt.O:
+            $('#winner').text('O wins!');
+            break;
+
+          case Ttt.TIE:
+            $('#winner').text("Cat's game");
+            break;
+          }
+
+          redraw();
         }
 
         board.mousemove(function (event) {
@@ -37,24 +60,15 @@
         board.click(function (event) {
           var square = getSquare(event.pageX, event.pageY);
           if (game.winner() === 0 && game.getPiece(square) === 0) {
-            game.move(square);
+            move(square);
 
-            switch (game.winner()) {
-            case Ttt.X:
-              $('#winner').text('X wins!');
-              break;
-
-            case Ttt.O:
-              $('#winner').text('O wins!');
-              break;
-
-            case Ttt.TIE:
-              $('#winner').text("Cat's game");
-              break;
+            if (game.winner() === 0) {
+              square = ai.getMove(game);
+              $('#debug').text('AI chose ' + square);
+              if (game.getPiece(square) === 0)
+                move(square);
             }
           }
-
-          redraw();
         });
 
         redraw();

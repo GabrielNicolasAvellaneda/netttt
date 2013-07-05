@@ -14,6 +14,22 @@ var Ttt = (function (Ttt) {
     return ((board >> (square << 1)) & 3);
   }
 
+  function toArray(board) {
+    var a = [];
+    for (var i = 0; i < 9; ++i, board >>= 2)
+      a[i] = (board & 3);
+    return a;
+  }
+
+  function validMoves(board) {
+    var moves = [];
+    for (var i = 0; i < 9; ++i, board >>= 2) {
+      if ((board & 3) === 0)
+        moves.push(i);
+    }
+    return moves;
+  }
+
   function move(board, square, piece) {
     return (board | (piece << (square << 1)));
   }
@@ -47,6 +63,10 @@ var Ttt = (function (Ttt) {
 
   Game.prototype.getPiece = function (square) {
     return getPiece(this.board, square);
+  };
+
+  Game.prototype.validMoves = function () {
+    return validMoves(this.board);
   };
 
   Game.prototype.move = function (square) {
@@ -137,6 +157,12 @@ var Ttt = (function (Ttt) {
   Ttt.X = X;
   Ttt.O = O;
   Ttt.TIE = TIE;
+  Ttt.newBoard = newBoard;
+  Ttt.getPiece = getPiece;
+  Ttt.toArray = toArray;
+  Ttt.validMoves = validMoves;
+  Ttt.move = move;
+  Ttt.winner = winner;
   Ttt.Game = Game;
 
   return Ttt;
