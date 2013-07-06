@@ -12,10 +12,13 @@
     <script src="src/ttt.js"></script>
     <script src="src/ai.js"></script>
     <script>
+      var game;
+      var ai;
       $(function () {
+        game = new Ttt.Game();
+        ai = new Ai.Smart();
+
         var board = $('#board');
-        var game = new Ttt.Game();
-        var ai = new Ai.Smart();
 
         function redraw(highlightPiece) {
           game.draw(board[0].getContext('2d'), board.width(), board.height(), 0, 0, highlightPiece);
