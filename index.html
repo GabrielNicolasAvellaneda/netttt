@@ -69,6 +69,8 @@
               square = ai.getMove(game);
               if (game.getPiece(square) === 0)
                 move(square);
+              else
+                $('#winner').text('AI chose invalid move ' + square);
             }
           }
         });
