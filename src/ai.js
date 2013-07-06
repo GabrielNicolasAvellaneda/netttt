@@ -45,17 +45,18 @@ var Ai = (function (Ai) {
   // us as to which move to make, if top is true we return the move instead of
   // the score of the best move.
   function negamax(board, turn, depth, top, alpha, beta) {
-    var move, value, max, best;
-
     var winner = Ttt.winner(board);
     if (!depth || winner)
       return (turn === Ttt.X ? 1 : -1) * evaluate(board, winner);
 
-    max = -Infinity;
-    best = -1;
+    var max = -Infinity;
+    var best = -1;
     // TODO: "branching", to try the likely-best move first.
-    for (move in Ttt.validMoves(board)) {
-      value = -negamax(
+    var moves = Ttt.validMoves(board);
+    for (var move in moves) {
+      move = moves[move];
+
+      var value = -negamax(
         Ttt.move(board, move, turn),
         (turn === Ttt.X ? Ttt.O : Ttt.X),
         depth - 1, false, -beta, -alpha
