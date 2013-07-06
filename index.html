@@ -19,6 +19,7 @@
         ai = new Ai.Smart();
 
         var board = $('#board');
+        var aiPlayer = ($.inArray('ai=x', window.location.search.substr(1).split('&')) !== -1 ? Ttt.X : Ttt.O);
 
         function redraw(highlightPiece) {
           game.draw(board[0].getContext('2d'), board.width(), board.height(), 0, 0, highlightPiece);
@@ -72,7 +73,10 @@
           }
         });
 
-        redraw();
+        if (aiPlayer === Ttt.X)
+          move(ai.getMove(game));
+        else
+          redraw();
       });
     </script>
   </body>
