@@ -7,7 +7,6 @@
   <body>
     <canvas id="board" width="300" height="300"></canvas>
     <p id="winner"></p>
-    <p id="debug"></p>
 
     <script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
     <script src="src/ttt.js"></script>
@@ -64,7 +63,6 @@
 
             if (game.winner() === 0) {
               square = ai.getMove(game);
-              $('#debug').text('AI chose ' + square);
               if (game.getPiece(square) === 0)
                 move(square);
             }
