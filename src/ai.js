@@ -9,10 +9,14 @@ var Ai = (function (Ai) {
     return moves[Math.floor(Math.random() * moves.length)];
   };
 
+  function sign(piece) {
+    return (piece === 0 ? 0 : (piece === Ttt.X ? 1 : -1));
+  }
+
   function nearWin(a, b, c) {
-    a = (a === 0 ? 0 : (a === Ttt.X ? 1 : -1));
-    b = (b === 0 ? 0 : (b === Ttt.X ? 1 : -1));
-    c = (c === 0 ? 0 : (c === Ttt.X ? 1 : -1));
+    a = sign(a);
+    b = sign(b);
+    c = sign(c);
     var sum = a + b + c;
     return (Math.abs(sum) === 2 ? (sum > 0 ? 1 : -1) : 0);
   }
@@ -34,7 +38,7 @@ var Ai = (function (Ai) {
   // player could win at the current position.
   function evaluate(board, winner) {
     if (winner)
-      return (winner === Ttt.TIE ? 0 : (winner === Ttt.X ? 100 : -100));
+      return sign(winner) * 100;
 
     return countNearWins(board) * 10;
   }
@@ -47,7 +51,7 @@ var Ai = (function (Ai) {
   function negamax(board, turn, depth, top, alpha, beta) {
     var winner = Ttt.winner(board);
     if (!depth || winner)
-      return (turn === Ttt.X ? 1 : -1) * evaluate(board, winner);
+      return sign(turn) * evaluate(board, winner);
 
     var max = -Infinity;
     var best = -1;
@@ -64,6 +68,7 @@ var Ai = (function (Ai) {
 
       if (value >= beta)
         return (top ? move : value);
+
       if (value > max) {
         max = value;
         best = move;
