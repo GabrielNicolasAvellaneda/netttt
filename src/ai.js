@@ -35,10 +35,11 @@ var Ai = (function (Ai) {
   }
 
   // We give a winning position a high score, then count the number of ways a
-  // player could win at the current position.
-  function evaluate(board, winner) {
+  // player could win at the current position.  We use depth to nudge us to
+  // winning sooner over later.
+  function evaluate(board, depth, winner) {
     if (winner)
-      return sign(winner) * 100;
+      return sign(winner) * (100 + depth);
 
     return countNearWins(board) * 10;
   }
@@ -51,7 +52,7 @@ var Ai = (function (Ai) {
   function negamax(board, turn, depth, top, alpha, beta) {
     var winner = Ttt.winner(board);
     if (!depth || winner)
-      return sign(turn) * evaluate(board, winner);
+      return sign(turn) * evaluate(board, depth, winner);
 
     var max = -Infinity;
     var best = -1;
