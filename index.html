@@ -67,7 +67,7 @@
 
             if (game.winner() === 0) {
               square = ai.getMove(game);
-              if (game.getPiece(square) === 0)
+              if (square >= 0 && square < 9 && game.getPiece(square) === 0)
                 move(square);
               else
                 $('#winner').text('AI chose invalid move ' + square);
