@@ -38,10 +38,28 @@ var Ai = (function (Ai) {
   // player could win at the current position.  We use depth to nudge us to
   // winning sooner over later.
   function evaluate(board, depth, winner) {
+    depth = depth || 0;
+    if (typeof winner === 'undefined')
+      winner = Ttt.winner(board);
     if (winner)
-      return sign(winner) * (100 + depth);
+      return sign(winner === Ttt.TIE ? 0 : winner) * (100 + depth);
 
     return countNearWins(board) * 10;
+  }
+
+  function resolveTies(board, moves, turn) {
+    var max = -Infinity;
+    var best = -1;
+    for (var move in moves) {
+      move = moves[move];
+
+      var value = sign(turn) * evaluate(Ttt.move(board, move, turn));
+      if (value > max) {
+        max = value;
+        best = move;
+      }
+    }
+    return best;
   }
 
   // Slightly modified negamax with alpha-beta pruning (see
@@ -55,7 +73,7 @@ var Ai = (function (Ai) {
       return sign(turn) * evaluate(board, depth, winner);
 
     var max = -Infinity;
-    var best = -1;
+    var potentials = [];
     // TODO: "branching", to try the likely-best move first.
     var moves = Ttt.validMoves(board);
     for (var move in moves) {
@@ -69,16 +87,17 @@ var Ai = (function (Ai) {
 
       if (value >= beta)
         return (top ? move : value);
-
-      if (value > max) {
-        max = value;
-        best = move;
-      }
       if (value > alpha)
         alpha = value;
+      if (value > max) {
+        max = value;
+        potentials = [move];
+      } else if (value === max) {
+        potentials.push(move);
+      }
     }
 
-    return (top ? best : max);
+    return (top ? resolveTies(board, potentials, turn) : max);
   }
 
   function Smart(depth) {
