@@ -21,6 +21,28 @@ var Ttt = (function (Ttt) {
     return a;
   }
 
+  function toString(board, padding, prePad) {
+    var s = '';
+
+    function pad(padding) {
+      while (padding-- > 0)
+        s += ' ';
+    }
+
+    var a = toArray(board);
+    if (prePad)
+      pad(padding || 0);
+    for (var i = 0; i < 3; ++i) {
+      for (var j = 0; j < 3; ++j)
+        s += (a[i * 3 + j] === 0 ? '-' : (a[i * 3 + j] === X ? 'X' : 'O'));
+      if (i < 2) {
+        s += '\n';
+        pad(padding || 0);
+      }
+    }
+    return s;
+  }
+
   function validMoves(board) {
     var moves = [];
     for (var i = 0; i < 9; ++i, board >>= 2) {
@@ -160,6 +182,7 @@ var Ttt = (function (Ttt) {
   Ttt.newBoard = newBoard;
   Ttt.getPiece = getPiece;
   Ttt.toArray = toArray;
+  Ttt.toString = toString;
   Ttt.validMoves = validMoves;
   Ttt.move = move;
   Ttt.winner = winner;
