@@ -45,65 +45,68 @@ var Ai = (function (Ai) {
     return countNearWins(board) * 10;
   }
 
-  function resolveTies(board, moves, turn) {
+  function topScoring(moves, evaluator) {
     var max = -Infinity;
-    var best = -1;
+    var top = [];
+
     for (var move in moves) {
       move = moves[move];
 
-      var value = sign(turn) * evaluate(Ttt.move(board, move, turn));
+      var value = evaluator(move);
+
       if (value > max) {
         max = value;
-        best = move;
+        top = [move];
+      } else if (value === max) {
+        top.push(move);
       }
     }
-    return best;
+
+    return {score: max, moves: top};
+  }
+
+  function resolveTies(board, moves, turn) {
+    var top = topScoring(moves, function (move) {
+      return sign(turn) * evaluate(Ttt.move(board, move, turn));
+    }).moves;
+    return top[Math.floor(Math.random() * top.length)];
   }
 
   function Smart(maxDepth) {
-    this.maxDepth = maxDepth || 4;
+    this.maxDepth = maxDepth || 9;
   }
 
-  // Slightly modified negamax with alpha-beta pruning (see
+  // Basic negamax implementation, with a few modifications (see
   // <http://en.wikipedia.org/wiki/Negamax> or
-  // <http://www.hamedahmadi.com/gametree/>).  Because we use this to instruct
+  // <http://www.hamedahmadi.com/gametree/>).  We don't use alpha-beta pruning
+  // because we don't just want to find the first valid move with the best
+  // score, we want to find all valid moves with the same (and best) score, so
+  // we can choose among them randomly.  We actually choose randomly among the
+  // best-scoring moves that immediately evaluate to the highest value board,
+  // so that e.g. we favor an immediate win over a win just around the corner.
+  // Adding a random element keeps the opponent on their toes a little more
+  // than something entirely predictable.  Because we also use this to instruct
   // us as to which move to make, if we're at the top level we return the move
-  // instead of the score of the best move.
-  Smart.prototype.negamax = function (board, turn, depth, alpha, beta) {
+  // itself instead of the score of the best move.
+  Smart.prototype.negamax = function (board, turn, depth) {
     // TODO: keep a map of boards -> their value for each search, so we don't
     // constantly re-evaluate the same thing.
     var winner = Ttt.winner(board);
     if (depth === this.maxDepth || winner)
       return sign(turn) * evaluate(board, winner);
 
-    var max = -Infinity;
-    var potentials = [];
     // TODO: use symmetry (at least for the first two moves) to avoid searching
     // the full set of valid moves.
-    // TODO: "branching", to try the likely-best move first.
-    var moves = Ttt.validMoves(board);
-    for (var move in moves) {
-      move = moves[move];
-
-      var value = -this.negamax(
+    var that = this;
+    var topScore = topScoring(Ttt.validMoves(board), function (move) {
+      return -that.negamax(
         Ttt.move(board, move, turn),
         (turn === Ttt.X ? Ttt.O : Ttt.X),
-        depth + 1, -beta, -alpha
+        depth + 1
       );
+    });
 
-      if (value >= beta)
-        return (depth ? value : move);
-      if (value > alpha)
-        alpha = value;
-      if (value > max) {
-        max = value;
-        potentials = [move];
-      } else if (value === max) {
-        potentials.push(move);
-      }
-    }
-
-    return (depth ? max : resolveTies(board, potentials, turn));
+    return (depth ? topScore.score : resolveTies(board, topScore.moves, turn));
   }
 
   Smart.prototype.getMove = function (game) {
