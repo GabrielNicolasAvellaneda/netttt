@@ -104,8 +104,6 @@ var Ai = (function (Ai) {
   // us as to which move to make, if we're at the top level we return the move
   // itself instead of the score of the best move.
   Smart.prototype.negamax = function (board, turn, depth) {
-    // TODO: keep a map of boards -> their value for each search, so we don't
-    // constantly re-evaluate the same thing.
     var winner = Ttt.winner(board);
     if (depth === this.maxDepth || winner)
       return sign(turn) * evaluate(board, winner);
