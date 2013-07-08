@@ -21,24 +21,12 @@ var Ttt = (function (Ttt) {
     return a;
   }
 
-  function toString(board, padding, prePad) {
+  function toString(board) {
     var s = '';
-
-    function pad(padding) {
-      while (padding-- > 0)
-        s += ' ';
-    }
-
-    var a = toArray(board);
-    if (prePad)
-      pad(padding || 0);
-    for (var i = 0; i < 3; ++i) {
-      for (var j = 0; j < 3; ++j)
-        s += (a[i * 3 + j] === 0 ? '-' : (a[i * 3 + j] === X ? 'X' : 'O'));
-      if (i < 2) {
-        s += '\n';
-        pad(padding || 0);
-      }
+    for (var i = 0; i < 9; ++i, board >>= 2) {
+      if (i > 0 && !(i % 3))
+        s += '/';
+      s += ((board & 3) === 0 ? '-' : ((board & 3) === X ? 'X' : 'O'));
     }
     return s;
   }
