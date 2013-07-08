@@ -13,25 +13,35 @@ var Ai = (function (Ai) {
     return (piece === 0 ? 0 : (piece === Ttt.X ? 1 : -1));
   }
 
-  function nearWin(a, b, c) {
-    a = sign(a);
-    b = sign(b);
-    c = sign(c);
-    var sum = a + b + c;
-    return (Math.abs(sum) === 2 ? (sum > 0 ? 1 : -1) : 0);
+  function countScoringMoves(board, scorer) {
+    var pieces = Ttt.toArray(board);
+    var scoringMoves = 0;
+
+    for (var i = 0; i < 3; ++i) {
+      scoringMoves += scorer(pieces[i * 3 + 0], pieces[i * 3 + 1], pieces[i * 3 + 2]);
+      scoringMoves += scorer(pieces[i + 0], pieces[i + 3], pieces[i + 6]);
+    }
+    scoringMoves += scorer(pieces[0], pieces[4], pieces[8]);
+    scoringMoves += scorer(pieces[2], pieces[4], pieces[6]);
+
+    return scoringMoves;
   }
 
   function countNearWins(board) {
-    var pieces = Ttt.toArray(board);
-    var nearWins = 0;
+    return countScoringMoves(board, function (a, b, c) {
+      var sum = sign(a) + sign(b) + sign(c);
+      return (Math.abs(sum) === 2 ? (sum > 0 ? 1 : -1) : 0);
+    });
+  }
 
-    for (var i = 0; i < 3; ++i) {
-      nearWins += nearWin(pieces[i * 3 + 0], pieces[i * 3 + 1], pieces[i * 3 + 2]);
-      nearWins += nearWin(pieces[i + 0], pieces[i + 3], pieces[i + 6]);
-    }
-    nearWins += nearWin(pieces[0], pieces[4], pieces[8]);
-    nearWins += nearWin(pieces[2], pieces[4], pieces[6]);
-    return nearWins;
+  function countPotentialWins(board) {
+    return countScoringMoves(board, function (a, b, c) {
+      a = sign(a);
+      b = sign(b);
+      c = sign(c);
+      var sum = a + b + c;
+      return (Math.abs(sum) === 1 && (!a || !b || !c) ? sum : 0);
+    });
   }
 
   // We give a winning position a high score, then count the number of ways a
@@ -42,7 +52,7 @@ var Ai = (function (Ai) {
     if (winner)
       return sign(winner === Ttt.TIE ? 0 : winner) * 100;
 
-    return countNearWins(board) * 10;
+    return countNearWins(board) * 10 + countPotentialWins(board);
   }
 
   function topScoring(moves, evaluator) {
