@@ -10,6 +10,10 @@ var Ttt = (function (Ttt) {
     return 0;
   }
 
+  function isEmpty(board) {
+    return (board === 0);
+  }
+
   function getPiece(board, square) {
     return ((board >> (square << 1)) & 3);
   }
@@ -168,6 +172,7 @@ var Ttt = (function (Ttt) {
   Ttt.O = O;
   Ttt.TIE = TIE;
   Ttt.newBoard = newBoard;
+  Ttt.isEmpty = isEmpty;
   Ttt.getPiece = getPiece;
   Ttt.toArray = toArray;
   Ttt.toString = toString;

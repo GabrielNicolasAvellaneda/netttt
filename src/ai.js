@@ -4,9 +4,13 @@ var Ai = (function (Ai) {
   function Random() {
   }
 
+  function arrayRand(a) {
+    return a[Math.floor(Math.random() * a.length)];
+  }
+
   Random.prototype.getMove = function (game) {
     var moves = game.validMoves();
-    return moves[Math.floor(Math.random() * moves.length)];
+    return arrayRand(moves);
   };
 
   function sign(piece) {
@@ -55,6 +59,11 @@ var Ai = (function (Ai) {
     return countNearWins(board) * 10 + countPotentialWins(board);
   }
 
+  function Smart(maxDepth) {
+    // Default to whole game (2 in our first moves table + 7 is the whole 9).
+    this.maxDepth = maxDepth || 7;
+  }
+
   function topScoring(moves, evaluator) {
     var max = -Infinity;
     var top = [];
@@ -79,11 +88,7 @@ var Ai = (function (Ai) {
     var top = topScoring(moves, function (move) {
       return sign(turn) * evaluate(Ttt.move(board, move, turn));
     }).moves;
-    return top[Math.floor(Math.random() * top.length)];
-  }
-
-  function Smart(maxDepth) {
-    this.maxDepth = maxDepth || 9;
+    return arrayRand(top);
   }
 
   // Basic negamax implementation, with a few modifications (see
@@ -105,8 +110,6 @@ var Ai = (function (Ai) {
     if (depth === this.maxDepth || winner)
       return sign(turn) * evaluate(board, winner);
 
-    // TODO: use symmetry (at least for the first two moves) to avoid searching
-    // the full set of valid moves.
     var that = this;
     var topScore = topScoring(Ttt.validMoves(board), function (move) {
       return -that.negamax(
@@ -117,10 +120,23 @@ var Ai = (function (Ai) {
     });
 
     return (depth ? topScore.score : resolveTies(board, topScore.moves, turn));
+  };
+
+  // A small lookup table for the second move, so we don't have to go through
+  // the whole algorithm just to pick the corners or the middle.
+  function getSecondMove(board) {
+    if (Ttt.getPiece(board, 4))
+      return arrayRand([0, 2, 6, 8]);
+    return 4;
   }
 
   Smart.prototype.getMove = function (game) {
-    return this.negamax(game.board, game.turn, 0, -Infinity, Infinity);
+    if (Ttt.isEmpty(game.board))
+      return 4;
+    if (Ttt.validMoves(game.board).length === 8)
+      return getSecondMove(game.board);
+
+    return this.negamax(game.board, game.turn, 0);
   };
 
   Ai.Random = Random;
