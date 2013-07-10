@@ -31,13 +31,11 @@ var Neural = (function (Neural) {
 
   Net.prototype.run = function () {
     for (var i = 0; i < this.nodes.length - 1; ++i) {
-      for (var j = 0; j < this.nodes[i + 1].length; ++j) {
-        var sum = 0;
-        for (var k = 0; k < this.nodes[i].length; ++k) {
-          if (this.nodes[i][k] >= 1)
-            sum += this.nodes[i][k] * this.weights[i][j * this.nodes[i].length + k];
+      for (var j = 0; j < this.nodes[i].length; ++j) {
+        if (this.nodes[i][j] >= 1) {
+          for (var k = 0; k < this.nodes[i + 1].length; ++k)
+            this.nodes[i + 1][k] += this.nodes[i][j] * this.weights[i][this.nodes[i + 1].length * j + k];
         }
-        this.nodes[i + 1][j] = sum;
       }
     }
   };
