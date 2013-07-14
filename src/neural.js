@@ -3,11 +3,16 @@
 var Neural = (function (Neural) {
   function Net(sizes) {
     this.nodes = new Array(sizes.length);
-    for (var i = 0; i < sizes.length; ++i)
+    for (var i = 0; i < sizes.length; ++i) {
       this.nodes[i] = new Array(sizes[i]);
-    this.weights = new Array(sizes.length - 1);
-    for (i = 0; i < sizes.length - 1; ++i)
-      this.weights[i] = new Array(sizes[i] * sizes[i + 1]);
+      for (var j = 0; j < sizes[i]; ++j) {
+        this.nodes[i][j] = {
+          input: 0,
+          threshold: 1,
+          weights: new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
+        };
+      }
+    }
   }
 
   Net.prototype.getSizes = function () {
@@ -17,36 +22,43 @@ var Neural = (function (Neural) {
     return sizes;
   };
 
-  Net.prototype.reset = function () {
+  Net.prototype.setThresholds = function (thresholds) {
     for (var i = 0; i < this.nodes.length; ++i) {
       for (var j = 0; j < this.nodes[i].length; ++j)
-        this.nodes[i][j] = 0;
+        this.nodes[i][j].threshold = thresholds[i][j];
     }
   };
 
   Net.prototype.setWeights = function (weights) {
-    for (var i = 0; i < this.weights.length; ++i) {
-      for (var j = 0; j < this.weights[i].length; ++j)
-        this.weights[i][j] = weights[i][j];
+    for (var i = 0; i < this.nodes.length; ++i) {
+      for (var j = 0; j < this.nodes[i].length; ++j) {
+        for (var k = 0; k < this.nodes[i][j].weights.length; ++k)
+          this.nodes[i][j].weights[k] = weights[i][j][k];
+      }
+    }
+  };
+
+  Net.prototype.reset = function () {
+    for (var i = 0; i < this.nodes.length; ++i) {
+      for (var j = 0; j < this.nodes[i].length; ++j)
+        this.nodes[i][j].input = 0;
     }
   };
 
   Net.prototype.setInputs = function (inputs) {
     for (var i = 0; i < this.nodes[0].length; ++i)
-      this.nodes[0][i] = inputs[i];
+      this.nodes[0][i].input = inputs[i];
   };
 
   Net.prototype.run = function (inputs) {
-    if (typeof inputs !== 'undefined') {
-      this.reset();
+    if (typeof inputs !== 'undefined')
       this.setInputs(inputs);
-    }
 
     for (var i = 0; i < this.nodes.length - 1; ++i) {
       for (var j = 0; j < this.nodes[i].length; ++j) {
-        if (this.nodes[i][j] >= 1) {
-          for (var k = 0; k < this.nodes[i + 1].length; ++k)
-            this.nodes[i + 1][k] += this.nodes[i][j] * this.weights[i][this.nodes[i + 1].length * j + k];
+        if (this.nodes[i][j].input >= this.nodes[i][j].threshold) {
+          for (var k = 0; k < this.nodes[i][j].weights.length; ++k)
+            this.nodes[i + 1][k].input += this.nodes[i][j].weights[k];
         }
       }
     }
@@ -55,7 +67,14 @@ var Neural = (function (Neural) {
   };
 
   Net.prototype.getOutputs = function () {
-    return this.nodes[this.nodes.length - 1];
+    var col = this.nodes.length - 1;
+    var outputs = new Array(this.nodes[col].length);
+    for (var i = 0; i < this.nodes[col].length; ++i) {
+      outputs[i] = (this.nodes[col][i].input >= this.nodes[col][i].threshold
+          ? this.nodes[col][i].weights[0]
+          : 0);
+    }
+    return outputs;
   };
 
   Neural.Net = Net;
