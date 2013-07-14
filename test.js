@@ -104,21 +104,14 @@ module("Neural");
 
 test("xor", function () {
   var n = new Neural.Net([2, 3, 1]);
+  deepEqual(n.getSizes(), [2, 3, 1], "correct sizes");
   n.setWeights([[1, 0.5, 0, 0, 0.5, 1], [1, -2, 1]]);
-  n.reset();
-  n.setInputs([0, 0]);
-  n.run();
+  n.run([0, 0]);
   deepEqual(n.getOutputs(), [0], "0^0 == 0");
-  n.reset();
-  n.setInputs([0, 1]);
-  n.run();
+  n.run([0, 1]);
   deepEqual(n.getOutputs(), [1], "0^1 == 1");
-  n.reset();
-  n.setInputs([1, 0]);
-  n.run();
+  n.run([1, 0]);
   deepEqual(n.getOutputs(), [1], "1^0 == 1");
-  n.reset();
-  n.setInputs([1, 1]);
-  n.run();
+  n.run([1, 1]);
   deepEqual(n.getOutputs(), [0], "1^1 == 0");
 });

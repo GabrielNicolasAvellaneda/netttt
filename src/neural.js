@@ -10,6 +10,13 @@ var Neural = (function (Neural) {
       this.weights[i] = new Array(sizes[i] * sizes[i + 1]);
   }
 
+  Net.prototype.getSizes = function () {
+    var sizes = new Array(this.nodes.length);
+    for (var i = 0; i < this.nodes.length; ++i)
+      sizes[i] = this.nodes[i].length;
+    return sizes;
+  };
+
   Net.prototype.reset = function () {
     for (var i = 0; i < this.nodes.length; ++i) {
       for (var j = 0; j < this.nodes[i].length; ++j)
@@ -29,7 +36,12 @@ var Neural = (function (Neural) {
       this.nodes[0][i] = inputs[i];
   };
 
-  Net.prototype.run = function () {
+  Net.prototype.run = function (inputs) {
+    if (typeof inputs !== 'undefined') {
+      this.reset();
+      this.setInputs(inputs);
+    }
+
     for (var i = 0; i < this.nodes.length - 1; ++i) {
       for (var j = 0; j < this.nodes[i].length; ++j) {
         if (this.nodes[i][j] >= 1) {
@@ -38,6 +50,8 @@ var Neural = (function (Neural) {
         }
       }
     }
+
+    return this.getOutputs();
   };
 
   Net.prototype.getOutputs = function () {
