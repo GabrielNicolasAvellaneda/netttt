@@ -38,6 +38,13 @@ var Ai = (function (Ai) {
     });
   }
 
+  function countNearWinsForPlayer(board, player) {
+    return countScoringMoves(board, function (a, b, c) {
+      var sum = sign(a) + sign(b) + sign(c);
+      return (Math.abs(sum) === 2 && sum / 2 === sign(player) ? 1 : 0);
+    });
+  }
+
   function countPotentialWins(board) {
     return countScoringMoves(board, function (a, b, c) {
       a = sign(a);
@@ -84,10 +91,35 @@ var Ai = (function (Ai) {
     return {score: max, moves: top};
   }
 
+  function blocksOpponent(board, move, turn) {
+    var opponent = (turn === Ttt.X ? Ttt.O : Ttt.X);
+    return (countNearWinsForPlayer(Ttt.move(board, move, turn), opponent)
+        < countNearWinsForPlayer(board, opponent));
+  }
+
+  // The moves are all equal as far as negamax is concerned, so we've got to
+  // choose the best one to play now.  We prefer an immediate win, then
+  // blocking an opponent's win, then we just pick the square with the highest
+  // evaluation.  If there are still moves that are equivalent after all that,
+  // we pick randomly.  Adding a random element keeps the opponent on their
+  // toes a little more than something entirely predictable.
   function resolveTies(board, moves, turn) {
     var top = topScoring(moves, function (move) {
-      return sign(turn) * evaluate(Ttt.move(board, move, turn));
+      return (Ttt.winner(Ttt.move(board, move, turn)) === turn ? 1 : 0);
     }).moves;
+
+    if (top.length > 1) {
+      top = topScoring(top, function (move) {
+        return (blocksOpponent(board, move, turn) ? 1 : 0);
+      }).moves;
+    }
+
+    if (top.length > 1) {
+      top = topScoring(top, function (move) {
+        return sign(turn) * evaluate(Ttt.move(board, move, turn));
+      }).moves;
+    }
+
     return arrayRand(top);
   }
 
@@ -96,13 +128,10 @@ var Ai = (function (Ai) {
   // <http://www.hamedahmadi.com/gametree/>).  We don't use alpha-beta pruning
   // because we don't just want to find the first valid move with the best
   // score, we want to find all valid moves with the same (and best) score, so
-  // we can choose among them randomly.  We actually choose randomly among the
-  // best-scoring moves that immediately evaluate to the highest value board,
-  // so that e.g. we favor an immediate win over a win just around the corner.
-  // Adding a random element keeps the opponent on their toes a little more
-  // than something entirely predictable.  Because we also use this to instruct
-  // us as to which move to make, if we're at the top level we return the move
-  // itself instead of the score of the best move.
+  // we can choose among them.  We pick from the best scoring moves with a
+  // simple heuristic (see resolveTies()).  Because we also use this to
+  // instruct us as to which move to make, if we're at the top level we return
+  // the move itself instead of the score of the best move.
   Smart.prototype.negamax = function (board, turn, depth) {
     var winner = Ttt.winner(board);
     if (depth === this.maxDepth || winner)
