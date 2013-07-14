@@ -88,7 +88,7 @@ test("Game logic", function () {
 
 module("Ai");
 
-test("Smart", function () {
+test("basic Smart behavior", function () {
   var a = new Ai.Smart();
   var g = new Ttt.Game();
   strictEqual(a.getMove(g), 4, "center first");
@@ -100,17 +100,64 @@ test("Smart", function () {
   strictEqual(a.getMove(g), 2, "goes for a win over blocking");
 });
 
+test("Smart vs. itself", function () {
+  var a = new Ai.Smart();
+  var g = new Ttt.Game();
+  var move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid first move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid second move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid third move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid fourth move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid fifth move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid sixth move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid seventh move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid eighth move");
+  g.move(move);
+  move = a.getMove(g);
+  ok(move >= 0 && move < 9 && g.getPiece(move) === 0, "valid ninth move");
+  g.move(move);
+  strictEqual(g.winner(), Ttt.TIE, "cat's game");
+});
+
 module("Neural");
 
 test("xor", function () {
   var n = new Neural.Net([2, 3, 1]);
   deepEqual(n.getSizes(), [2, 3, 1], "correct sizes");
   n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
-  deepEqual(n.run([0, 0]), [0], "0^0 == 0");
+  deepEqual(n.run([0, 0]), [0], "0⊕0 = 0");
   n.reset();
-  deepEqual(n.run([0, 1]), [1], "0^1 == 1");
+  deepEqual(n.run([0, 1]), [1], "0⊕1 = 1");
   n.reset();
-  deepEqual(n.run([1, 0]), [1], "1^0 == 1");
+  deepEqual(n.run([1, 0]), [1], "1⊕0 = 1");
   n.reset();
-  deepEqual(n.run([1, 1]), [0], "1^1 == 0");
+  deepEqual(n.run([1, 1]), [0], "1⊕1 = 0");
+});
+
+test("nand", function () {
+  var n = new Neural.Net([2, 1]);
+  deepEqual(n.getSizes(), [2, 1], "correct sizes");
+  n.setWeights([[[-1], [-1]], [[1]]]);
+  n.setThresholds([[1, 1], [-1]]);
+  deepEqual(n.run([0, 0]), [1], "0↑0 = 1");
+  n.reset();
+  deepEqual(n.run([0, 1]), [1], "0↑1 = 1");
+  n.reset();
+  deepEqual(n.run([1, 0]), [1], "1↑0 = 1");
+  n.reset();
+  deepEqual(n.run([1, 1]), [0], "1↑1 = 0");
 });
