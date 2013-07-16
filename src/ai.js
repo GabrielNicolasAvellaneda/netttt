@@ -98,15 +98,23 @@ var Ai = (function (Ai) {
   }
 
   // The moves are all equal as far as negamax is concerned, so we've got to
-  // choose the best one to play now.  We prefer an immediate win, then
-  // blocking an opponent's win, then we just pick the square with the highest
+  // choose the best one to play now.  If any moves are are an immediate win,
+  // we simply pick among them randomly.  Otherwise, we choose moves blocking
+  // an opponent's win, then we just pick the square with the highest
   // evaluation.  If there are still moves that are equivalent after all that,
   // we pick randomly.  Adding a random element keeps the opponent on their
   // toes a little more than something entirely predictable.
   function resolveTies(board, moves, turn) {
+    var win = false;
     var top = topScoring(moves, function (move) {
-      return (Ttt.winner(Ttt.move(board, move, turn)) === turn ? 1 : 0);
+      if (Ttt.winner(Ttt.move(board, move, turn)) === turn) {
+        win = true;
+        return 1;
+      }
+      return 0;
     }).moves;
+    if (win)
+      return arrayRand(top);
 
     if (top.length > 1) {
       top = topScoring(top, function (move) {
@@ -167,8 +175,8 @@ var Ai = (function (Ai) {
   };
 
   Ai.Random = Random;
-  Ai.Smart = Smart;
   Ai.evaluate = evaluate;
+  Ai.Smart = Smart;
 
   return Ai;
 }(Ai || {}));
