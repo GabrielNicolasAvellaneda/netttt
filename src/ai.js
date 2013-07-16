@@ -105,30 +105,32 @@ var Ai = (function (Ai) {
   // we pick randomly.  Adding a random element keeps the opponent on their
   // toes a little more than something entirely predictable.
   function resolveTies(board, moves, turn) {
-    var win = false;
-    var top = topScoring(moves, function (move) {
-      if (Ttt.winner(Ttt.move(board, move, turn)) === turn) {
-        win = true;
-        return 1;
-      }
-      return 0;
-    }).moves;
-    if (win)
-      return arrayRand(top);
+    if (moves.length > 1) {
+      var win = false;
+      moves = topScoring(moves, function (move) {
+        if (Ttt.winner(Ttt.move(board, move, turn)) === turn) {
+          win = true;
+          return 1;
+        }
+        return 0;
+      }).moves;
+      if (win)
+        return arrayRand(moves);
+    }
 
-    if (top.length > 1) {
-      top = topScoring(top, function (move) {
+    if (moves.length > 1) {
+      moves = topScoring(moves, function (move) {
         return (blocksOpponent(board, move, turn) ? 1 : 0);
       }).moves;
     }
 
-    if (top.length > 1) {
-      top = topScoring(top, function (move) {
+    if (moves.length > 1) {
+      moves = topScoring(moves, function (move) {
         return sign(turn) * evaluate(Ttt.move(board, move, turn));
       }).moves;
     }
 
-    return arrayRand(top);
+    return arrayRand(moves);
   }
 
   // Basic negamax implementation, with a few modifications (see
