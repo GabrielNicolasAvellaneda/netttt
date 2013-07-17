@@ -176,9 +176,32 @@ var Ai = (function (Ai) {
     return this.negamax(game.board, game.turn, 0);
   };
 
+  function Neural(net) {
+    this.net = net;
+  }
+
+  function getInputs(game) {
+    var inputs = new Array(9);
+    for (var i = 0; i < 9; ++i) {
+      var piece = game.getPiece(i);
+      inputs[i] = (piece === 0 ? 0 : (piece === game.turn ? 1 : -1));
+    }
+    return inputs;
+  }
+
+  Neural.prototype.getMove = function (game) {
+    this.net.reset();
+    var outputs = this.net.run(getInputs(game));
+
+    return arrayRand(topScoring(game.validMoves(), function (move) {
+      return outputs[move];
+    }).moves);
+  };
+
   Ai.Random = Random;
   Ai.evaluate = evaluate;
   Ai.Smart = Smart;
+  Ai.Neural = Neural;
 
   return Ai;
 }(Ai || {}));

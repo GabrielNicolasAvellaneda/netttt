@@ -86,6 +86,35 @@ test("Game logic", function () {
   deepEqual(g.history, [Ttt.newBoard()], "history undone");
 });
 
+module("Neural");
+
+test("xor", function () {
+  var n = new Neural.Net([2, 3, 1]);
+  deepEqual(n.getSizes(), [2, 3, 1], "correct sizes");
+  n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
+  deepEqual(n.run([0, 0]), [0], "0⊕0 = 0");
+  n.reset();
+  deepEqual(n.run([0, 1]), [1], "0⊕1 = 1");
+  n.reset();
+  deepEqual(n.run([1, 0]), [1], "1⊕0 = 1");
+  n.reset();
+  deepEqual(n.run([1, 1]), [0], "1⊕1 = 0");
+});
+
+test("nand", function () {
+  var n = new Neural.Net([2, 1]);
+  deepEqual(n.getSizes(), [2, 1], "correct sizes");
+  n.setWeights([[[-1], [-1]], [[1]]]);
+  n.setThresholds([[1, 1], [-1]]);
+  deepEqual(n.run([0, 0]), [1], "0↑0 = 1");
+  n.reset();
+  deepEqual(n.run([0, 1]), [1], "0↑1 = 1");
+  n.reset();
+  deepEqual(n.run([1, 0]), [1], "1↑0 = 1");
+  n.reset();
+  deepEqual(n.run([1, 1]), [0], "1↑1 = 0");
+});
+
 module("Ai");
 
 test("basic Smart behavior", function () {
@@ -133,31 +162,24 @@ test("Smart vs. itself", function () {
   strictEqual(g.winner(), Ttt.TIE, "cat's game");
 });
 
-module("Neural");
-
-test("xor", function () {
-  var n = new Neural.Net([2, 3, 1]);
-  deepEqual(n.getSizes(), [2, 3, 1], "correct sizes");
-  n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
-  deepEqual(n.run([0, 0]), [0], "0⊕0 = 0");
-  n.reset();
-  deepEqual(n.run([0, 1]), [1], "0⊕1 = 1");
-  n.reset();
-  deepEqual(n.run([1, 0]), [1], "1⊕0 = 1");
-  n.reset();
-  deepEqual(n.run([1, 1]), [0], "1⊕1 = 0");
-});
-
-test("nand", function () {
-  var n = new Neural.Net([2, 1]);
-  deepEqual(n.getSizes(), [2, 1], "correct sizes");
-  n.setWeights([[[-1], [-1]], [[1]]]);
-  n.setThresholds([[1, 1], [-1]]);
-  deepEqual(n.run([0, 0]), [1], "0↑0 = 1");
-  n.reset();
-  deepEqual(n.run([0, 1]), [1], "0↑1 = 1");
-  n.reset();
-  deepEqual(n.run([1, 0]), [1], "1↑0 = 1");
-  n.reset();
-  deepEqual(n.run([1, 1]), [0], "1↑1 = 0");
+test("basic Neural behavior", function () {
+  var n = new Neural.Net([9, 9]);
+  n.setWeights([
+    [
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0]
+    ],
+    [[1],[1],[1],[1],[1],[1],[1],[1],[1]]
+  ]);
+  n.setThresholds([[1,1,1,1,0,1,1,1,1], [1,1,1,1,1,1,1,1,1,]]);
+  var a = new Ai.Neural(n);
+  var g = new Ttt.Game();
+  strictEqual(a.getMove(g), 4, "chooses highest scoring move");
 });
