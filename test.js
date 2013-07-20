@@ -178,7 +178,7 @@ test("basic Neural behavior", function () {
     ],
     [[1],[1],[1],[1],[1],[1],[1],[1],[1]]
   ]);
-  n.setThresholds([[1,1,1,1,0,1,1,1,1], [1,1,1,1,1,1,1,1,1,]]);
+  n.setThresholds([[1,1,1,1,0,1,1,1,1], [1,1,1,1,1,1,1,1,1]]);
   var a = new Ai.Neural(n);
   var g = new Ttt.Game();
   strictEqual(a.getMove(g), 4, "chooses highest scoring move");
