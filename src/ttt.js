@@ -79,6 +79,10 @@ var Ttt = (function (Ttt) {
     return getPiece(this.board, square);
   };
 
+  Game.prototype.toString = function () {
+    return "" + (this.turn === X ? "X" : "O") + "@" + toString(this.board);
+  };
+
   Game.prototype.validMoves = function () {
     return validMoves(this.board);
   };

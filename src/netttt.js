@@ -7,27 +7,40 @@ var NetTtt = (function (NetTtt) {
     this.losses = 0;
   }
 
-  function play(aiX, aiO) {
-    var ais = {};
-    ais[Ttt.X] = aiX;
-    ais[Ttt.O] = aiO;
+  function play(x, o) {
+    var players = {};
+    players[Ttt.X] = x;
+    players[Ttt.O] = o;
 
     var game = new Ttt.Game();
     var winner;
     do {
-      var move = ais[game.turn].getMove(game);
+      var move = players[game.turn].getMove(game);
       if (move < 0 || move >= 9 || game.getPiece(move) !== 0)
-        return 0;
+        throw new Error("Invalid move " + move + " in " + game.toString());
       game.move(move);
     } while (!(winner = game.winner()));
 
     return winner;
   }
 
-  Individual.prototype.compete = function (ai, times) {
-    times = times || 1;
-    // TODO: play as X, play as O, tally wins/losses.  Rank first on losses,
-    // then use wins as tie-breaker.
+  Individual.prototype.match = function (opponent, myTurn) {
+    var ai = new Ai.Neural(this.net);
+    var x = (myTurn === Ttt.X ? ai : opponent);
+    var o = (myTurn === Ttt.X ? opponent : ai);
+
+    var winner = play(x, o);
+    if (winner === myTurn)
+      this.wins++;
+    else if (winner !== Ttt.TIE)
+      this.losses++;
+  };
+
+  Individual.prototype.tourney = function (opponent) {
+    // TODO: play a number of games as each player.  Maybe play against the
+    // smart ai first and count losses (and maybe count the number of turns
+    // till losing, too, as a first metric), then count wins/losses against the
+    // random ai.
   };
 
   function Generation(individuals) {
