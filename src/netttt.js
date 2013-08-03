@@ -1,11 +1,22 @@
 "use strict";
 
 var NetTtt = (function (NetTtt) {
+  // We play three games as both X and O against both the random and smart AIs.
+  // This counts for all 6 wins against the random AI, and no losses against
+  // the random AI (and of course no losses implies lasting all 9 turns).  See
+  // getScore() for how that adds up to 69.
+  var PERFECT_SCORE = 69;
+
   function Individual(net) {
     this.net = net;
+    this.max_age = 0;
     this.wins = 0;
     this.losses = 0;
   }
+
+  Individual.prototype.getScore = function () {
+    return (this.wins - this.losses) * 10 + this.max_age;
+  };
 
   function play(x, o) {
     var players = {};
@@ -14,38 +25,54 @@ var NetTtt = (function (NetTtt) {
 
     var game = new Ttt.Game();
     var winner;
+    var turns = 0;
     do {
       var move = players[game.turn].getMove(game);
       if (move < 0 || move >= 9 || game.getPiece(move) !== 0)
-        throw new Error("Invalid move " + move + " in " + game.toString());
+        throw new Error("AI chose invalid move " + move + " in " + game.toString());
       game.move(move);
+      ++turns;
     } while (!(winner = game.winner()));
 
-    return winner;
+    return {winner: winner, turns: turns};
   }
+
+  Individual.prototype.score = function (result, myTurn, vsSmart) {
+    if (vsSmart && result.turns > this.max_age)
+      this.max_age = result.turns;
+
+    if (result.winner === myTurn) {
+      if (vsSmart)
+        throw new Error("Smart AI should never lose");
+      this.wins++;
+    } else if (result.winner !== Ttt.TIE) {
+      this.losses++;
+    }
+  };
 
   Individual.prototype.match = function (opponent, myTurn) {
     var ai = new Ai.Neural(this.net);
     var x = (myTurn === Ttt.X ? ai : opponent);
     var o = (myTurn === Ttt.X ? opponent : ai);
 
-    var winner = play(x, o);
-    if (winner === myTurn)
-      this.wins++;
-    else if (winner !== Ttt.TIE)
-      this.losses++;
+    this.score(play(x, o), myTurn, opponent instanceof Ai.Smart);
   };
 
-  Individual.prototype.tourney = function (opponent) {
-    // TODO: play a number of games as each player.  Maybe play against the
-    // smart ai first and count losses (and maybe count the number of turns
-    // till losing, too, as a first metric), then count wins/losses against the
-    // random ai.
+  Individual.prototype.tourney = function () {
+    var opponents = [new Ai.Random(), new Ai.Smart()];
+    for (var o in opponents) {
+      for (var i = 0; i < 3; ++i) {
+        this.match(opponents[o], Ttt.X);
+        this.match(opponents[o], Ttt.O);
+      }
+    }
+    return this.getScore();
   };
 
   function Generation(individuals) {
   }
 
+  NetTtt.PERFECT_SCORE = PERFECT_SCORE;
   NetTtt.Individual = Individual;
   NetTtt.Generation = Generation;
 
