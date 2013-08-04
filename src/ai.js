@@ -8,7 +8,7 @@ var Ai = (function (Ai) {
         return a[Math.floor(Math.random() * a.length)];
     }
 
-    Random.prototype.getMove = function (game) {
+    Random.prototype.getMove = function Random_getMove(game) {
         return arrayRand(game.validMoves());
     };
 
@@ -147,7 +147,7 @@ var Ai = (function (Ai) {
     // simple heuristic (see resolveTies()).  Because we also use this to
     // instruct us as to which move to make, if we're at the top level we return
     // the move itself instead of the score of the best move.
-    Smart.prototype.negamax = function (board, turn, depth) {
+    Smart.prototype.negamax = function Smart_negamax(board, turn, depth) {
         var winner = Ttt.winner(board);
         if (depth === this.maxDepth || winner) {
             return sign(turn) * evaluate(board, winner);
@@ -174,7 +174,7 @@ var Ai = (function (Ai) {
         return 4;
     }
 
-    Smart.prototype.getMove = function (game) {
+    Smart.prototype.getMove = function Smart_getMove(game) {
         if (Ttt.isEmpty(game.board)) {
             return 4;
         }
@@ -198,7 +198,7 @@ var Ai = (function (Ai) {
         return inputs;
     }
 
-    Neural.prototype.getMove = function (game) {
+    Neural.prototype.getMove = function Neural_getMove(game) {
         this.net.reset();
         var outputs = this.net.run(getInputs(game));
 

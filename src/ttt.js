@@ -78,30 +78,30 @@ var Ttt = (function (Ttt) {
         this.history = [];
     }
 
-    Game.prototype.getPiece = function (square) {
+    Game.prototype.getPiece = function Game_getPiece(square) {
         return getPiece(this.board, square);
     };
 
-    Game.prototype.toString = function () {
+    Game.prototype.toString = function Game_toString() {
         return "" + (this.turn === X ? "X" : "O") + "@" + toString(this.board);
     };
 
-    Game.prototype.validMoves = function () {
+    Game.prototype.validMoves = function Game_validMoves() {
         return validMoves(this.board);
     };
 
-    Game.prototype.move = function (square) {
+    Game.prototype.move = function Game_move(square) {
         this.history.push(this.board);
         this.board = move(this.board, square, this.turn);
         this.turn ^= 2;
     };
 
-    Game.prototype.undo = function () {
+    Game.prototype.undo = function Game_undo() {
         this.board = this.history.pop();
         this.turn ^= 2;
     };
 
-    Game.prototype.winner = function () {
+    Game.prototype.winner = function Game_winner() {
         return winner(this.board);
     };
 
@@ -132,7 +132,7 @@ var Ttt = (function (Ttt) {
         ctx.stroke();
     }
 
-    Game.prototype.draw = function (ctx, w, h, x, y, highlightSquare) {
+    Game.prototype.draw = function Game_draw(ctx, w, h, x, y, highlightSquare) {
         ctx.save();
         ctx.translate(x || 0, y || 0);
         ctx.scale(w, h);

@@ -15,7 +15,7 @@ var Neural = (function (Neural) {
         }
     }
 
-    Net.prototype.getSizes = function () {
+    Net.prototype.getSizes = function Net_getSizes() {
         var sizes = new Array(this.nodes.length);
         for (var i = 0; i < this.nodes.length; ++i) {
             sizes[i] = this.nodes[i].length;
@@ -23,7 +23,7 @@ var Neural = (function (Neural) {
         return sizes;
     };
 
-    Net.prototype.setThresholds = function (thresholds) {
+    Net.prototype.setThresholds = function Net_setThresholds(thresholds) {
         for (var i = 0; i < this.nodes.length; ++i) {
             for (var j = 0; j < this.nodes[i].length; ++j) {
                 this.nodes[i][j].threshold = thresholds[i][j];
@@ -31,7 +31,7 @@ var Neural = (function (Neural) {
         }
     };
 
-    Net.prototype.setWeights = function (weights) {
+    Net.prototype.setWeights = function Net_setWeights(weights) {
         for (var i = 0; i < this.nodes.length; ++i) {
             for (var j = 0; j < this.nodes[i].length; ++j) {
                 for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
@@ -41,7 +41,7 @@ var Neural = (function (Neural) {
         }
     };
 
-    Net.prototype.reset = function () {
+    Net.prototype.reset = function Net_reset() {
         for (var i = 0; i < this.nodes.length; ++i) {
             for (var j = 0; j < this.nodes[i].length; ++j) {
                 this.nodes[i][j].input = 0;
@@ -49,13 +49,13 @@ var Neural = (function (Neural) {
         }
     };
 
-    Net.prototype.setInputs = function (inputs) {
+    Net.prototype.setInputs = function Net_setInputs(inputs) {
         for (var i = 0; i < this.nodes[0].length; ++i) {
             this.nodes[0][i].input = inputs[i];
         }
     };
 
-    Net.prototype.run = function (inputs) {
+    Net.prototype.run = function Net_run(inputs) {
         if (typeof inputs !== 'undefined') {
             this.setInputs(inputs);
         }
@@ -73,7 +73,7 @@ var Neural = (function (Neural) {
         return this.getOutputs();
     };
 
-    Net.prototype.getOutputs = function () {
+    Net.prototype.getOutputs = function Net_getOutputs() {
         var col = this.nodes.length - 1;
         var outputs = new Array(this.nodes[col].length);
         for (var i = 0; i < this.nodes[col].length; ++i) {

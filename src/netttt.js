@@ -14,7 +14,7 @@ var NetTtt = (function (NetTtt) {
         this.losses = 0;
     }
 
-    Individual.prototype.getScore = function () {
+    Individual.prototype.getScore = function Individual_getScore() {
         return (this.wins - this.losses) * 10 + this.maxAge;
     };
 
@@ -39,7 +39,7 @@ var NetTtt = (function (NetTtt) {
         return {winner: winner, turns: turns};
     }
 
-    Individual.prototype.score = function (result, myTurn, vsSmart) {
+    Individual.prototype.score = function Individual_score(result, myTurn, vsSmart) {
         if (vsSmart && result.turns > this.maxAge) {
             this.maxAge = result.turns;
         }
@@ -55,7 +55,7 @@ var NetTtt = (function (NetTtt) {
         }
     };
 
-    Individual.prototype.match = function (opponent, myTurn) {
+    Individual.prototype.match = function Individual_match(opponent, myTurn) {
         var ai = new Ai.Neural(this.net);
         var x = (myTurn === Ttt.X ? ai : opponent);
         var o = (myTurn === Ttt.X ? opponent : ai);
@@ -63,7 +63,7 @@ var NetTtt = (function (NetTtt) {
         this.score(play(x, o), myTurn, opponent instanceof Ai.Smart);
     };
 
-    Individual.prototype.tourney = function () {
+    Individual.prototype.tourney = function Individual_tourney() {
         var opponents = [new Ai.Random(), new Ai.Smart()];
         for (var o in opponents) {
             for (var i = 0; i < 3; ++i) {
@@ -84,7 +84,7 @@ var NetTtt = (function (NetTtt) {
         }
     }
 
-    Generation.prototype.run = function () {
+    Generation.prototype.run = function Generation_run() {
         for (var i = 0; i < this.members.length; ++i) {
             this.members[i].fitness = this.members[i].individual.tourney();
         }
