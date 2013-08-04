@@ -9,8 +9,7 @@ var Ai = (function (Ai) {
     }
 
     Random.prototype.getMove = function (game) {
-        var moves = game.validMoves();
-        return arrayRand(moves);
+        return arrayRand(game.validMoves());
     };
 
     function sign(piece) {
