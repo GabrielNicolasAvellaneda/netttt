@@ -9,13 +9,13 @@ var NetTtt = (function (NetTtt) {
 
   function Individual(net) {
     this.net = net;
-    this.max_age = 0;
+    this.maxAge = 0;
     this.wins = 0;
     this.losses = 0;
   }
 
   Individual.prototype.getScore = function () {
-    return (this.wins - this.losses) * 10 + this.max_age;
+    return (this.wins - this.losses) * 10 + this.maxAge;
   };
 
   function play(x, o) {
@@ -38,8 +38,8 @@ var NetTtt = (function (NetTtt) {
   }
 
   Individual.prototype.score = function (result, myTurn, vsSmart) {
-    if (vsSmart && result.turns > this.max_age)
-      this.max_age = result.turns;
+    if (vsSmart && result.turns > this.maxAge)
+      this.maxAge = result.turns;
 
     if (result.winner === myTurn) {
       if (vsSmart)
@@ -70,7 +70,22 @@ var NetTtt = (function (NetTtt) {
   };
 
   function Generation(individuals) {
+    this.members = new Array(individuals.length);
+    for (var i = 0; i < individuals.length; ++i) {
+      this.members[i] = {
+        individual: individuals[i],
+        fitness = -Infinity
+      };
+    }
   }
+
+  Generation.prototype.run = function () {
+    for (var i = 0; i < this.members.length; ++i)
+      this.members[i].fitness = this.members[i].individual.tourney();
+    this.members.sort(function (a, b) { // By fitness descending.
+      return (b.fitness - a.fitness);
+    });
+  };
 
   NetTtt.PERFECT_SCORE = PERFECT_SCORE;
   NetTtt.Individual = Individual;
