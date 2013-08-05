@@ -9,6 +9,10 @@ var NetTtt = (function (NetTtt) {
 
     function Individual(net) {
         this.net = net;
+        this.reset();
+    }
+
+    Individual.prototype.reset = function Individual_reset() {
         this.maxAge = 0;
         this.wins = 0;
         this.losses = 0;
@@ -74,6 +78,16 @@ var NetTtt = (function (NetTtt) {
         return this.getScore();
     };
 
+    // Resets and returns this instance (cheaper than an actual clone).
+    Individual.prototype.clone = function Individual_clone() {
+        this.reset();
+        return this;
+    };
+
+    Individual.prototype.reproduce = function Individual_reproduce() {
+        // TODO
+    };
+
     function Generation(individuals) {
         this.members = new Array(individuals.length);
         for (var i = 0; i < individuals.length; ++i) {
@@ -88,14 +102,129 @@ var NetTtt = (function (NetTtt) {
         for (var i = 0; i < this.members.length; ++i) {
             this.members[i].fitness = this.members[i].individual.tourney();
         }
+
         this.members.sort(function (a, b) { // By fitness descending.
             return (b.fitness - a.fitness);
         });
     };
 
+    Generation.prototype.getIndividuals = function Generation_getIndividuals() {
+        var individuals = new Array(this.members.length);
+        for (var i = 0; i < this.members.length; ++i) {
+            individuals[i] = this.members[i].individual;
+        }
+        return individuals;
+    };
+
+    Generation.prototype.next = function Generation_next(oldIndividuals, clones, contributors) {
+        clones = clones || 5;
+        contributors = contributors || 10;
+        oldIndividuals = oldIndividuals || this.getIndividuals();
+
+        var children = oldIndividuals.length / contributors;
+        var lastChildren = children - clones;
+
+        var newIndividuals = [];
+        var i;
+        for (i = 0; i < clones; ++i) {
+            newIndividuals.push(oldIndividuals[i].clone());
+        }
+
+        for (i = 0; i < contributors - 1; ++i) {
+            for (var j = 0; j < children; ++j) {
+                newIndividuals.push(oldIndividuals[i].reproduce());
+            }
+        }
+        for (i = 0; i < lastChildren; ++i) {
+            newIndividuals.push(oldIndividuals[contributors - 1].reproduce());
+        }
+
+        return new Generation(newIndividuals);
+    }
+
+    function realRand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function intRand(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Return a Neural.Net() sizes param with 9 in/out neurons, and 1-3
+    // internal layers of 3-36 nodes each.
+    function randomSizes(minLayers, maxLayers, minNodes, maxNodes) {
+        minLayers = minLayers || 1;
+        maxLayers = maxLayers || 3;
+        minNodes = minNodes || 3;
+        maxNodes = maxNodes || 36;
+
+        var sizes = [9];
+        var internalLayers = intRand(minLayers, maxLayers);
+        for (var i = 0; i < internalLayers; ++i) {
+            sizes.push(intRand(minNodes, maxNodes));
+        }
+        sizes.push(9);
+        return sizes;
+    }
+
+    // Return an array of weights for the right sizes, with each value in the
+    // range [-100,100).
+    function randomWeights(sizes, minWeight, maxWeight) {
+        minWeight = minWeight || -100;
+        maxWeight = maxWeight || 100;
+
+        var weights = new Array(sizes.length);
+        for (var i = 0; i < sizes.length; ++i) {
+            weights[i] = new Array(sizes[i]);
+            var count = (i < sizes.length - 1 ? sizes[i + 1] : 1);
+            for (var j = 0; j < sizes[i]; ++j) {
+                weights[i][j] = new Array(count);
+                for (var k = 0; k < count; ++k) {
+                    weights[i][j][k] = realRand(minWeight, maxWeight);
+                }
+            }
+        }
+        return weights;
+    }
+
+    // Return an array of thresholds for the right sizes, each value in the
+    // range [-1000,1000).
+    function randomThresholds(sizes, minThresh, maxThresh) {
+        minThresh = minThresh || -1000;
+        maxThresh = maxThresh || 1000;
+
+        var thresholds = new Array(sizes.length);
+        for (var i = 0; i < sizes.length; ++i) {
+            thresholds[i] = new Array(sizes[i]);
+            for (var j = 0; j < sizes[i]; ++j) {
+                thresholds[i][j] = realRand(minThresh, maxThresh);
+            }
+        }
+        return thresholds;
+    }
+
+    function newRandomNet() {
+        var sizes = randomSizes();
+        var n = new Neural.Net(sizes);
+        n.setWeights(randomWeights(sizes));
+        n.setThresholds(randomThresholds(sizes));
+        return n;
+    }
+
+    function newRandomGeneration(size) {
+        size = size || 100;
+
+        var individuals = new Array(size);
+        for (var i = 0; i < size; ++i) {
+            individuals[i] = new Individual(newRandomNet());
+        }
+        return new Generation(individuals);
+    }
+
     NetTtt.PERFECT_SCORE = PERFECT_SCORE;
     NetTtt.Individual = Individual;
     NetTtt.Generation = Generation;
+    NetTtt.newRandomGeneration = newRandomGeneration;
 
     return NetTtt;
 }(NetTtt || {}));
