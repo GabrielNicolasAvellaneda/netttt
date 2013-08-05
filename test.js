@@ -102,6 +102,21 @@ test("xor", function () {
     deepEqual(n.run([1, 1]), [0], "1⊕1 = 0");
 });
 
+test("cloned xor", function () {
+    var n = new Neural.Net([2, 3, 1]);
+    n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
+    var n2 = n.clone();
+    n.setWeights([[[0, 0, 0], [0, 0, 0]], [[0], [0], [0]], [[0]]]);
+    deepEqual(n2.getSizes(), [2, 3, 1], "correct sizes");
+    deepEqual(n2.run([0, 0]), [0], "0⊕0 = 0");
+    n2.reset();
+    deepEqual(n2.run([0, 1]), [1], "0⊕1 = 1");
+    n2.reset();
+    deepEqual(n2.run([1, 0]), [1], "1⊕0 = 1");
+    n2.reset();
+    deepEqual(n2.run([1, 1]), [0], "1⊕1 = 0");
+});
+
 test("nand", function () {
     var n = new Neural.Net([2, 1]);
     deepEqual(n.getSizes(), [2, 1], "correct sizes");

@@ -84,16 +84,30 @@ var NetTtt = (function (NetTtt) {
         return this;
     };
 
+    function realRand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function intRand(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     Individual.prototype.reproduce = function Individual_reproduce() {
-        // TODO
+        // TODO: small random chance of adding/removing a whole internal layer,
+        // or a node within an internal layer (extra weights/thresholds made up
+        // randomly).  Random chance to slightly perturb each weight/threshold.
     };
 
-    function Generation(individuals) {
+    // TODO: import/export?
+    // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
+
+    function Generation(number, individuals) {
+        this.number = number;
         this.members = new Array(individuals.length);
         for (var i = 0; i < individuals.length; ++i) {
             this.members[i] = {
                 individual: individuals[i],
-                fitness = -Infinity
+                fitness: -Infinity
             };
         }
     }
@@ -139,15 +153,7 @@ var NetTtt = (function (NetTtt) {
             newIndividuals.push(oldIndividuals[contributors - 1].reproduce());
         }
 
-        return new Generation(newIndividuals);
-    }
-
-    function realRand(min, max) {
-        return Math.random() * (max - min) + min;
-    }
-
-    function intRand(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return new Generation(this.number + 1, newIndividuals);
     }
 
     // Return a Neural.Net() sizes param with 9 in/out neurons, and 1-3
@@ -211,14 +217,16 @@ var NetTtt = (function (NetTtt) {
         return n;
     }
 
-    function newRandomGeneration(size) {
+    function newRandomGeneration(imported, size) {
+        imported = imported || [];
         size = size || 100;
 
+        // TODO: incorporate imported.
         var individuals = new Array(size);
         for (var i = 0; i < size; ++i) {
             individuals[i] = new Individual(newRandomNet());
         }
-        return new Generation(individuals);
+        return new Generation(0, individuals);
     }
 
     NetTtt.PERFECT_SCORE = PERFECT_SCORE;

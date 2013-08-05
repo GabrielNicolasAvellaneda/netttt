@@ -1,16 +1,21 @@
 "use strict";
 
 var Neural = (function (Neural) {
-    function Net(sizes) {
+    function Net(sizes, nodeValues) {
         this.nodes = new Array(sizes.length);
         for (var i = 0; i < sizes.length; ++i) {
             this.nodes[i] = new Array(sizes[i]);
             for (var j = 0; j < sizes[i]; ++j) {
                 this.nodes[i][j] = {
                     input: 0,
-                    threshold: 1,
+                    threshold: (typeof(nodeValues) === 'undefined' ? 1 : nodeValues[i][j].threshold),
                     weights: new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
                 };
+                if (typeof(nodeValues) !== 'undefined') {
+                    for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
+                        this.nodes[i][j].weights[k] = nodeValues[i][j].weights[k];
+                    }
+                }
             }
         }
     }
@@ -85,6 +90,12 @@ var Neural = (function (Neural) {
         }
         return outputs;
     };
+
+    Net.prototype.clone = function Net_clone() {
+        return new Net(this.getSizes(), this.nodes);
+    };
+
+    // TODO: some way to mutate a net.
 
     Neural.Net = Net;
 
