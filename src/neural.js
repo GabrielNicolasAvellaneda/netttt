@@ -20,6 +20,14 @@ var Neural = (function (Neural) {
         }
     }
 
+    Net.prototype.eachNode = function Net_eachNode(f) {
+        for (var layer = 0; layer < this.nodes.length; ++layer) {
+            for (var index = 0; index < this.nodes[layer].length; ++index) {
+                f(this.nodes[layer][index], layer, index);
+            }
+        }
+    };
+
     Net.prototype.getSizes = function Net_getSizes() {
         var sizes = new Array(this.nodes.length);
         for (var i = 0; i < this.nodes.length; ++i) {
@@ -29,29 +37,23 @@ var Neural = (function (Neural) {
     };
 
     Net.prototype.setThresholds = function Net_setThresholds(thresholds) {
-        for (var i = 0; i < this.nodes.length; ++i) {
-            for (var j = 0; j < this.nodes[i].length; ++j) {
-                this.nodes[i][j].threshold = thresholds[i][j];
-            }
-        }
+        this.eachNode(function (n, layer, index) {
+            n.threshold = thresholds[layer][index];
+        });
     };
 
     Net.prototype.setWeights = function Net_setWeights(weights) {
-        for (var i = 0; i < this.nodes.length; ++i) {
-            for (var j = 0; j < this.nodes[i].length; ++j) {
-                for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
-                    this.nodes[i][j].weights[k] = weights[i][j][k];
-                }
+        this.eachNode(function (n, layer, index) {
+            for (var i = 0; i < n.weights.length; ++i) {
+                n.weights[i] = weights[layer][index][i];
             }
-        }
+        });
     };
 
     Net.prototype.reset = function Net_reset() {
-        for (var i = 0; i < this.nodes.length; ++i) {
-            for (var j = 0; j < this.nodes[i].length; ++j) {
-                this.nodes[i][j].input = 0;
-            }
-        }
+        this.eachNode(function (n, layer, index) {
+            n.input = 0;
+        });
     };
 
     Net.prototype.setInputs = function Net_setInputs(inputs) {
@@ -65,26 +67,25 @@ var Neural = (function (Neural) {
             this.setInputs(inputs);
         }
 
-        for (var i = 0; i < this.nodes.length - 1; ++i) {
-            for (var j = 0; j < this.nodes[i].length; ++j) {
-                if (this.nodes[i][j].input >= this.nodes[i][j].threshold) {
-                    for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
-                        this.nodes[i + 1][k].input += this.nodes[i][j].weights[k];
-                    }
+        var that = this;
+        this.eachNode(function (n, layer, index) {
+            if (layer < that.nodes.length - 1 && n.input >= n.threshold) {
+                for (var i = 0; i < n.weights.length; ++i) {
+                    that.nodes[layer + 1][i].input += n.weights[i];
                 }
             }
-        }
+        });
 
         return this.getOutputs();
     };
 
     Net.prototype.getOutputs = function Net_getOutputs() {
-        var col = this.nodes.length - 1;
-        var outputs = new Array(this.nodes[col].length);
-        for (var i = 0; i < this.nodes[col].length; ++i) {
+        var layer = this.nodes.length - 1;
+        var outputs = new Array(this.nodes[layer].length);
+        for (var i = 0; i < this.nodes[layer].length; ++i) {
             outputs[i] = (
-                this.nodes[col][i].input >= this.nodes[col][i].threshold
-                ? this.nodes[col][i].weights[0]
+                this.nodes[layer][i].input >= this.nodes[layer][i].threshold
+                ? this.nodes[layer][i].weights[0]
                 : 0
             );
         }

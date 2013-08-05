@@ -78,10 +78,8 @@ var NetTtt = (function (NetTtt) {
         return this.getScore();
     };
 
-    // Resets and returns this instance (cheaper than an actual clone).
     Individual.prototype.clone = function Individual_clone() {
-        this.reset();
-        return this;
+        return new Individual(this.net.clone());
     };
 
     function realRand(min, max) {
@@ -92,10 +90,29 @@ var NetTtt = (function (NetTtt) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    function perturbValue(v, minPerturb, maxPerturb, modifyChance) {
+        minPerturb = minPerturb || -100;
+        maxPerturb = maxPerturb || 100;
+        modifyChance = (typeof(modifyChance) === 'undefined' ? 0.001 : modifyChance);
+
+        if (Math.random() < modifyChance)
+            v += realRand(minPerturb, maxPerturb);
+        return v;
+    }
+
     Individual.prototype.reproduce = function Individual_reproduce() {
         // TODO: small random chance of adding/removing a whole internal layer,
         // or a node within an internal layer (extra weights/thresholds made up
-        // randomly).  Random chance to slightly perturb each weight/threshold.
+        // randomly?).
+
+        var n = this.net.clone();
+        n.eachNode(function (node, layer, index) {
+            node.threshold = perturbValue(node.threshold);
+            for (var i = 0; i < node.weights.length; ++i) {
+                node.weights[i] = perturbValue(node.weights[i]);
+            }
+        });
+        return new Individual(n);
     };
 
     // TODO: import/export?
