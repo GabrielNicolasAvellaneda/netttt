@@ -25,10 +25,10 @@ var Neural = (function (Neural) {
             for (var j = 0; j < sizes[i]; ++j) {
                 this.nodes[i][j] = {
                     input: 0,
-                    threshold: (typeof(nodes) === 'undefined' ? 1 : nodes[i][j].threshold),
+                    threshold: (typeof nodes === 'undefined' ? 1 : nodes[i][j].threshold),
                     weights: new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
                 };
-                if (typeof(nodes) !== 'undefined') {
+                if (typeof nodes !== 'undefined') {
                     for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
                         this.nodes[i][j].weights[k] = nodes[i][j].weights[k];
                     }
@@ -53,7 +53,7 @@ var Neural = (function (Neural) {
         var thresholds = new Array(this.nodes.length);
         var that = this;
         this.eachNode(function (n, layer, index) {
-            if (typeof(thresholds[layer]) === 'undefined') {
+            if (typeof thresholds[layer] === 'undefined') {
                 thresholds[layer] = new Array(that.nodes[layer].length);
             }
             thresholds[layer][index] = n.threshold;
@@ -65,7 +65,7 @@ var Neural = (function (Neural) {
         var weights = new Array(this.nodes.length);
         var that = this;
         this.eachNode(function (n, layer, index) {
-            if (typeof(weights[layer]) === 'undefined') {
+            if (typeof weights[layer] === 'undefined') {
                 weights[layer] = new Array(that.nodes[layer].length);
             }
             weights[layer][index] = new Array(n.weights.length);

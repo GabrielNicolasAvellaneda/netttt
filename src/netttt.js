@@ -82,6 +82,8 @@ var NetTtt = (function (NetTtt) {
         return new Individual(this.net.clone());
     };
 
+    // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
+
     function realRand(min, max) {
         return Math.random() * (max - min) + min;
     }
@@ -90,31 +92,58 @@ var NetTtt = (function (NetTtt) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function perturbValue(v, minPerturb, maxPerturb, modifyChance) {
-        minPerturb = minPerturb || -100;
-        maxPerturb = maxPerturb || 100;
-        modifyChance = (typeof(modifyChance) === 'undefined' ? 0.001 : modifyChance);
-
+    function randomizeValue(v, modifyChance, minPerturb, maxPerturb) {
         if (Math.random() < modifyChance)
             v += realRand(minPerturb, maxPerturb);
         return v;
     }
 
-    // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
+    function randomize(net, modifyChance, minThresh, maxThresh, minWeight, maxWeight) {
+        modifyChance = (typeof modifyChance === 'undefined' ? 0.001 : modifyChance);
+        minThresh = minThresh || -1000;
+        maxThresh = maxThresh || 1000;
+        minWeight = minWeight || -100;
+        maxWeight = maxWeight || 100;
+
+        net.eachNode(function (node, layer, index) {
+            node.threshold = randomizeValue(node.threshold, modifyChance, minThresh, maxThresh);
+            for (var i = 0; i < node.weights.length; ++i) {
+                node.weights[i] = randomizeValue(
+                    (typeof node.weights[i] === 'undefined' ? 0 : node.weights[i]),
+                    modifyChance, minWeight, maxWeight
+                );
+            }
+        });
+        return net;
+    }
+
+    // Return a Neural.Net() sizes param with 9 in/out neurons, and 1-3
+    // internal layers of 3-36 nodes each.
+    function randomSizes(minLayers, maxLayers, minNodes, maxNodes) {
+        minLayers = minLayers || 1;
+        maxLayers = maxLayers || 3;
+        minNodes = minNodes || 3;
+        maxNodes = maxNodes || 36;
+
+        var sizes = [9];
+        var internalLayers = intRand(minLayers, maxLayers);
+        for (var i = 0; i < internalLayers; ++i) {
+            sizes.push(intRand(minNodes, maxNodes));
+        }
+        sizes.push(9);
+        return sizes;
+    }
+
+    Individual.newRandom = function Individual_newRandom() { // "static"
+        return new Individual(randomize(new Neural.Net(randomSizes()), 1));
+    }
 
     Individual.prototype.reproduce = function Individual_reproduce() {
         // TODO: small random chance of adding/removing a whole internal layer,
         // or a node within an internal layer (extra weights/thresholds made up
         // randomly?).
 
-        var n = this.net.clone();
-        n.eachNode(function (node, layer, index) {
-            node.threshold = perturbValue(node.threshold);
-            for (var i = 0; i < node.weights.length; ++i) {
-                node.weights[i] = perturbValue(node.weights[i]);
-            }
-        });
-        return new Individual(n);
+        return new Individual(randomize(this.net.clone()));
     };
 
     Individual.prototype.export = function Individual_export() {
@@ -180,67 +209,6 @@ var NetTtt = (function (NetTtt) {
         return new Generation(this.number + 1, newIndividuals);
     }
 
-    // Return a Neural.Net() sizes param with 9 in/out neurons, and 1-3
-    // internal layers of 3-36 nodes each.
-    function randomSizes(minLayers, maxLayers, minNodes, maxNodes) {
-        minLayers = minLayers || 1;
-        maxLayers = maxLayers || 3;
-        minNodes = minNodes || 3;
-        maxNodes = maxNodes || 36;
-
-        var sizes = [9];
-        var internalLayers = intRand(minLayers, maxLayers);
-        for (var i = 0; i < internalLayers; ++i) {
-            sizes.push(intRand(minNodes, maxNodes));
-        }
-        sizes.push(9);
-        return sizes;
-    }
-
-    // Return an array of weights for the right sizes, with each value in the
-    // range [-100,100).
-    function randomWeights(sizes, minWeight, maxWeight) {
-        minWeight = minWeight || -100;
-        maxWeight = maxWeight || 100;
-
-        var weights = new Array(sizes.length);
-        for (var i = 0; i < sizes.length; ++i) {
-            weights[i] = new Array(sizes[i]);
-            var count = (i < sizes.length - 1 ? sizes[i + 1] : 1);
-            for (var j = 0; j < sizes[i]; ++j) {
-                weights[i][j] = new Array(count);
-                for (var k = 0; k < count; ++k) {
-                    weights[i][j][k] = realRand(minWeight, maxWeight);
-                }
-            }
-        }
-        return weights;
-    }
-
-    // Return an array of thresholds for the right sizes, each value in the
-    // range [-1000,1000).
-    function randomThresholds(sizes, minThresh, maxThresh) {
-        minThresh = minThresh || -1000;
-        maxThresh = maxThresh || 1000;
-
-        var thresholds = new Array(sizes.length);
-        for (var i = 0; i < sizes.length; ++i) {
-            thresholds[i] = new Array(sizes[i]);
-            for (var j = 0; j < sizes[i]; ++j) {
-                thresholds[i][j] = realRand(minThresh, maxThresh);
-            }
-        }
-        return thresholds;
-    }
-
-    function newRandomNet() {
-        var sizes = randomSizes();
-        var n = new Neural.Net(sizes);
-        n.setWeights(randomWeights(sizes));
-        n.setThresholds(randomThresholds(sizes));
-        return n;
-    }
-
     Generation.newRandom = function Generation_newRandom(imported, size) { // "static"
         imported = imported || [];
         size = size || 100;
@@ -251,7 +219,7 @@ var NetTtt = (function (NetTtt) {
             individuals[i] = imported[i];
         }
         for (; i < size; ++i) {
-            individuals[i] = new Individual(newRandomNet());
+            individuals[i] = Individual.newRandom();
         }
         return new Generation(0, individuals);
     }
