@@ -1,16 +1,16 @@
 "use strict";
 
 var NetTtt = (function (NetTtt) {
-    // We play three games as both X and O against both the random and smart
-    // AIs.  This counts for all 6 wins against the random AI, and no losses
-    // against the random AI (and of course no losses implies lasting all 9
-    // turns).  See getScore() for how that adds up to 69.
-    var PERFECT_SCORE = 69;
-
     function Individual(net) {
         this.net = net;
         this.reset();
     }
+
+    // We play three games as both X and O against both the random and smart
+    // AIs.  This counts for all 6 wins against the random AI, and no losses
+    // against the random AI (and of course no losses implies lasting all 9
+    // turns).  See getScore() for how that adds up to 69.
+    Individual.PERFECT_SCORE = 69;
 
     Individual.prototype.reset = function Individual_reset() {
         this.maxAge = 0;
@@ -100,6 +100,8 @@ var NetTtt = (function (NetTtt) {
         return v;
     }
 
+    // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
+
     Individual.prototype.reproduce = function Individual_reproduce() {
         // TODO: small random chance of adding/removing a whole internal layer,
         // or a node within an internal layer (extra weights/thresholds made up
@@ -115,8 +117,13 @@ var NetTtt = (function (NetTtt) {
         return new Individual(n);
     };
 
-    // TODO: import/export?
-    // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
+    Individual.prototype.export = function Individual_export() {
+        return this.net.export();
+    };
+
+    Individual.import = function Individual_import(i) { // "static"
+        return new Individual(Neural.Net.import(i));
+    };
 
     function Generation(number, individuals) {
         this.number = number;
@@ -234,22 +241,23 @@ var NetTtt = (function (NetTtt) {
         return n;
     }
 
-    function newRandomGeneration(imported, size) {
+    Generation.newRandom = function Generation_newRandom(imported, size) { // "static"
         imported = imported || [];
         size = size || 100;
 
-        // TODO: incorporate imported.
         var individuals = new Array(size);
-        for (var i = 0; i < size; ++i) {
+        var i;
+        for (i = 0; i < imported.length; ++i) {
+            individuals[i] = imported[i];
+        }
+        for (; i < size; ++i) {
             individuals[i] = new Individual(newRandomNet());
         }
         return new Generation(0, individuals);
     }
 
-    NetTtt.PERFECT_SCORE = PERFECT_SCORE;
     NetTtt.Individual = Individual;
     NetTtt.Generation = Generation;
-    NetTtt.newRandomGeneration = newRandomGeneration;
 
     return NetTtt;
 }(NetTtt || {}));

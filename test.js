@@ -102,19 +102,23 @@ test("xor", function () {
     deepEqual(n.run([1, 1]), [0], "1⊕1 = 0");
 });
 
-test("cloned xor", function () {
+test("cloned/exported/imported xor", function () {
     var n = new Neural.Net([2, 3, 1]);
     n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
     var n2 = n.clone();
     n.setWeights([[[0, 0, 0], [0, 0, 0]], [[0], [0], [0]], [[0]]]);
-    deepEqual(n2.getSizes(), [2, 3, 1], "correct sizes");
-    deepEqual(n2.run([0, 0]), [0], "0⊕0 = 0");
-    n2.reset();
-    deepEqual(n2.run([0, 1]), [1], "0⊕1 = 1");
-    n2.reset();
-    deepEqual(n2.run([1, 0]), [1], "1⊕0 = 1");
-    n2.reset();
-    deepEqual(n2.run([1, 1]), [0], "1⊕1 = 0");
+    var exp = n2.export();
+    n2.setWeights([[[0, 0, 0], [0, 0, 0]], [[0], [0], [0]], [[0]]]);
+    var exportJson = JSON.stringify(exp);
+    var n3 = Neural.Net.import(JSON.parse(exportJson));
+    deepEqual(n3.getSizes(), [2, 3, 1], "correct sizes");
+    deepEqual(n3.run([0, 0]), [0], "0⊕0 = 0");
+    n3.reset();
+    deepEqual(n3.run([0, 1]), [1], "0⊕1 = 1");
+    n3.reset();
+    deepEqual(n3.run([1, 0]), [1], "1⊕0 = 1");
+    n3.reset();
+    deepEqual(n3.run([1, 1]), [0], "1⊕1 = 0");
 });
 
 test("nand", function () {

@@ -54,9 +54,14 @@ var Ai = (function (Ai) {
         });
     }
 
+    function Smart(maxDepth) {
+        // Default to whole game (2 in our first moves table + 7 is the whole 9).
+        this.maxDepth = maxDepth || 7;
+    }
+
     // We give a winning position a high score, then count the number of ways a
     // player could win at the current position.
-    function evaluate(board, winner) {
+    Smart.evaluate = function Smart_evaluate(board, winner) { // "static"
         if (typeof winner === 'undefined') {
             winner = Ttt.winner(board);
         }
@@ -65,12 +70,7 @@ var Ai = (function (Ai) {
         }
 
         return countNearWins(board) * 10 + countPotentialWins(board);
-    }
-
-    function Smart(maxDepth) {
-        // Default to whole game (2 in our first moves table + 7 is the whole 9).
-        this.maxDepth = maxDepth || 7;
-    }
+    };
 
     function topScoring(moves, evaluator) {
         var max = -Infinity;
@@ -131,7 +131,7 @@ var Ai = (function (Ai) {
 
         if (moves.length > 1) {
             moves = topScoring(moves, function (move) {
-                return sign(turn) * evaluate(Ttt.move(board, move, turn));
+                return sign(turn) * Smart.evaluate(Ttt.move(board, move, turn));
             }).moves;
         }
 
@@ -150,7 +150,7 @@ var Ai = (function (Ai) {
     Smart.prototype.negamax = function Smart_negamax(board, turn, depth) {
         var winner = Ttt.winner(board);
         if (depth === this.maxDepth || winner) {
-            return sign(turn) * evaluate(board, winner);
+            return sign(turn) * Smart.evaluate(board, winner);
         }
 
         var that = this;
@@ -208,7 +208,6 @@ var Ai = (function (Ai) {
     };
 
     Ai.Random = Random;
-    Ai.evaluate = evaluate;
     Ai.Smart = Smart;
     Ai.Neural = Neural;
 

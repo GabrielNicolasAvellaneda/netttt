@@ -1,19 +1,36 @@
 "use strict";
 
 var Neural = (function (Neural) {
-    function Net(sizes, nodeValues) {
+    function getSizes(nodes) {
+        var sizes = new Array(nodes.length);
+        for (var i = 0; i < nodes.length; ++i) {
+            sizes[i] = nodes[i].length;
+        }
+        return sizes;
+    }
+
+    function Net(sizesOrNodes) {
+        var sizes, nodes;
+        if (Array.isArray(sizesOrNodes) && Array.isArray(sizesOrNodes[0])) {
+            sizes = getSizes(sizesOrNodes);
+            nodes = sizesOrNodes;
+        }
+        else {
+            sizes = sizesOrNodes;
+        }
+
         this.nodes = new Array(sizes.length);
         for (var i = 0; i < sizes.length; ++i) {
             this.nodes[i] = new Array(sizes[i]);
             for (var j = 0; j < sizes[i]; ++j) {
                 this.nodes[i][j] = {
                     input: 0,
-                    threshold: (typeof(nodeValues) === 'undefined' ? 1 : nodeValues[i][j].threshold),
+                    threshold: (typeof(nodes) === 'undefined' ? 1 : nodes[i][j].threshold),
                     weights: new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
                 };
-                if (typeof(nodeValues) !== 'undefined') {
+                if (typeof(nodes) !== 'undefined') {
                     for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
-                        this.nodes[i][j].weights[k] = nodeValues[i][j].weights[k];
+                        this.nodes[i][j].weights[k] = nodes[i][j].weights[k];
                     }
                 }
             }
@@ -29,11 +46,34 @@ var Neural = (function (Neural) {
     };
 
     Net.prototype.getSizes = function Net_getSizes() {
-        var sizes = new Array(this.nodes.length);
-        for (var i = 0; i < this.nodes.length; ++i) {
-            sizes[i] = this.nodes[i].length;
-        }
-        return sizes;
+        return getSizes(this.nodes);
+    };
+
+    Net.prototype.getThresholds = function Net_getThresholds() {
+        var thresholds = new Array(this.nodes.length);
+        var that = this;
+        this.eachNode(function (n, layer, index) {
+            if (typeof(thresholds[layer]) === 'undefined') {
+                thresholds[layer] = new Array(that.nodes[layer].length);
+            }
+            thresholds[layer][index] = n.threshold;
+        });
+        return thresholds;
+    };
+
+    Net.prototype.getWeights = function Net_getWeights() {
+        var weights = new Array(this.nodes.length);
+        var that = this;
+        this.eachNode(function (n, layer, index) {
+            if (typeof(weights[layer]) === 'undefined') {
+                weights[layer] = new Array(that.nodes[layer].length);
+            }
+            weights[layer][index] = new Array(n.weights.length);
+            for (var i = 0; i < n.weights.length; ++i) {
+                weights[layer][index][i] = n.weights[i];
+            }
+        });
+        return weights;
     };
 
     Net.prototype.setThresholds = function Net_setThresholds(thresholds) {
@@ -93,10 +133,24 @@ var Neural = (function (Neural) {
     };
 
     Net.prototype.clone = function Net_clone() {
-        return new Net(this.getSizes(), this.nodes);
+        return new Net(this.nodes);
     };
 
-    // TODO: some way to mutate a net.
+    Net.prototype.export = function Net_export() {
+        return {
+            thresholds: this.getThresholds(),
+            weights: this.getWeights()
+        };
+    };
+
+    Net.import = function Net_import(exp) { // "static"
+        var n = new Net(getSizes(exp.thresholds));
+        n.setThresholds(exp.thresholds);
+        n.setWeights(exp.weights);
+        return n;
+    };
+
+    // TODO: some way to mutate a net's dimensions.
 
     Neural.Net = Net;
 
