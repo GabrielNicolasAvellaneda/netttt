@@ -36,12 +36,12 @@ $(function () {
         redraw();
 
         switch (game.winner()) {
-        case Ttt.X: status.text('X wins!'); break;
-        case Ttt.O: status.text('O wins!'); break;
+        case Ttt.X: status.text("X wins!"); break;
+        case Ttt.O: status.text("O wins!"); break;
         case Ttt.TIE: status.text("Cat's game"); break;
         default:
             if (ais[game.turn] && paused) {
-                status.text('AI paused');
+                status.text("AI paused");
             }
             else {
                 clearStatus();
@@ -49,7 +49,12 @@ $(function () {
             break;
         }
 
-        pauseButton.val(paused ? 'Resume AI' : 'Pause AI');
+        if (xControl.val() === 'ai-neural') xAiNeuralImport.removeAttr('disabled');
+        else xAiNeuralImport.attr('disabled', true);
+        if (oControl.val() === 'ai-neural') oAiNeuralImport.removeAttr('disabled');
+        else oAiNeuralImport.attr('disabled', true);
+
+        pauseButton.val(paused ? "Resume AI" : "Pause AI");
 
         scheduleAiMove();
     }
@@ -112,12 +117,21 @@ $(function () {
         update();
     }
 
-    function setAiFromSelect(turn, select) {
+    function setAiFromSelect(turn) {
         var ai = null;
-        switch (select.val()) {
-        case "ai-random": ai = new Ai.Random(); break;
-        case "ai-smart": ai = new Ai.Smart(); break;
-        // TODO: ai-neural
+        switch ((turn === Ttt.X ? xControl : oControl).val()) {
+        case 'ai-random': ai = new Ai.Random(); break;
+        case 'ai-smart': ai = new Ai.Smart(); break;
+        case 'ai-neural':
+            try {
+                var obj = $.parseJSON((turn === Ttt.X ? xAiNeuralImport : oAiNeuralImport).val());
+                var individual = NetTtt.Individual.import(obj);
+                ai = new Ai.Neural(individual.net);
+            }
+            catch (e) {
+                console.log(e.toString());
+            }
+            break;
         }
         setAi(turn, ai);
     }
@@ -148,11 +162,19 @@ $(function () {
     });
 
     xControl.change(function (event) {
-        setAiFromSelect(Ttt.X, $(event.target));
+        setAiFromSelect(Ttt.X);
+    });
+
+    xAiNeuralImport.change(function (event) {
+        setAiFromSelect(Ttt.X);
     });
 
     oControl.change(function (event) {
-        setAiFromSelect(Ttt.O, $(event.target));
+        setAiFromSelect(Ttt.O);
+    });
+
+    oAiNeuralImport.change(function (event) {
+        setAiFromSelect(Ttt.O);
     });
 
     pauseButton.click(function (event) {
