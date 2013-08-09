@@ -123,13 +123,17 @@ $(function () {
         case 'ai-random': ai = new Ai.Random(); break;
         case 'ai-smart': ai = new Ai.Smart(); break;
         case 'ai-neural':
-            try {
-                var obj = $.parseJSON((turn === Ttt.X ? xAiNeuralImport : oAiNeuralImport).val());
-                var individual = NetTtt.Individual.import(obj);
-                ai = new Ai.Neural(individual.net);
-            }
-            catch (e) {
-                console.log(e.toString());
+            var importBox = (turn === Ttt.X ? xAiNeuralImport : oAiNeuralImport);
+            if (importBox.val().length > 0) {
+                try {
+                    var obj = $.parseJSON(importBox.val());
+                    var individual = NetTtt.Individual.import(obj);
+                    ai = new Ai.Neural(individual.net);
+                }
+                catch (e) {
+                    console.log(e.toString());
+                    alert(e.toString());
+                }
             }
             break;
         }
