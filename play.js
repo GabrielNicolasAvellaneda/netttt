@@ -1,0 +1,173 @@
+"use strict";
+
+var game;
+var ais;
+var aiDelay = 1000;
+
+$(function () {
+    ais = {};
+    ais[Ttt.X] = null;
+    ais[Ttt.O] = null;
+
+    var paused = false;
+    var board = $('#board');
+    var boardCtx = board[0].getContext('2d');
+    var status = $('#status');
+    var xControl = $('#x-control');
+    var xAiNeuralImport = $('#x-ai-neural-import');
+    var oControl = $('#o-control');
+    var oAiNeuralImport = $('#o-ai-neural-import');
+    var pauseButton = $('#pause');
+    var stepButton = $('#step');
+    var undoButton = $('#undo');
+    var restartButton = $('#restart');
+    var aiTimerId = undefined;
+
+    restart();
+
+    function restart() {
+        game = new Ttt.Game();
+        update();
+    }
+
+    function update() {
+        cancelAiMove();
+
+        redraw();
+
+        switch (game.winner()) {
+        case Ttt.X: status.text('X wins!'); break;
+        case Ttt.O: status.text('O wins!'); break;
+        case Ttt.TIE: status.text("Cat's game"); break;
+        default:
+            if (ais[game.turn] && paused) {
+                status.text('AI paused');
+            }
+            else {
+                clearStatus();
+            }
+            break;
+        }
+
+        pauseButton.val(paused ? 'Resume AI' : 'Pause AI');
+
+        scheduleAiMove();
+    }
+
+    function clearStatus() {
+        status.html('&nbsp;');
+    }
+
+    function redraw(highlightPiece) {
+        game.draw(boardCtx, board.width(), board.height(), 0, 0, highlightPiece);
+    }
+
+    function setPaused(p) {
+        if (p !== paused) {
+            paused = p;
+            update();
+        }
+    }
+
+    function move(square) {
+        game.move(square);
+        update();
+    }
+
+    function undo() {
+        if (game.history.length > 0) {
+            game.undo();
+            update();
+        }
+    }
+
+    function scheduleAiMove() {
+        if (typeof aiTimerId === 'undefined' && game.winner() === 0 && ais[game.turn] && !paused) {
+            aiTimerId = window.setInterval(makeAiMove, aiDelay);
+            status.text("Thinking...");
+        }
+    }
+
+    function cancelAiMove() {
+        if (typeof aiTimerId !== 'undefined') {
+            window.clearInterval(aiTimerId);
+            aiTimerId = undefined;
+            clearStatus();
+        }
+    }
+
+    function makeAiMove() {
+        cancelAiMove();
+
+        if (ais[game.turn] && game.winner() === 0) {
+            var square = ais[game.turn].getMove(game);
+            if (game.getPiece(square) !== 0)
+                throw new Error("AI chose invalid move " + square + " in " + game.toString());
+            move(square);
+        }
+    }
+
+    function setAi(turn, ai) {
+        ais[turn] = ai;
+        update();
+    }
+
+    function setAiFromSelect(turn, select) {
+        var ai = null;
+        switch (select.val()) {
+        case "ai-random": ai = new Ai.Random(); break;
+        case "ai-smart": ai = new Ai.Smart(); break;
+        // TODO: ai-neural
+        }
+        setAi(turn, ai);
+    }
+
+    function getSquare(x, y) {
+        var col = (x - board.offset().left) / board.width() * 3 | 0;
+        var row = (y - board.offset().top) / board.height() * 3 | 0;
+        return col + row * 3;
+    }
+
+    board.mousemove(function (event) {
+        if (!ais[game.turn] && game.winner() === 0) {
+            redraw(getSquare(event.pageX, event.pageY));
+        }
+    });
+
+    board.mouseleave(function (event) {
+        if (!ais[game.turn] && game.winner() === 0) {
+            redraw();
+        }
+    });
+
+    board.click(function (event) {
+        var square = getSquare(event.pageX, event.pageY);
+        if (!ais[game.turn] && game.winner() === 0 && game.getPiece(square) === 0) {
+            move(square);
+        }
+    });
+
+    xControl.change(function (event) {
+        setAiFromSelect(Ttt.X, $(event.target));
+    });
+
+    oControl.change(function (event) {
+        setAiFromSelect(Ttt.O, $(event.target));
+    });
+
+    pauseButton.click(function (event) {
+        setPaused(!paused);
+    });
+
+    stepButton.click(function (event) {
+        makeAiMove();
+    });
+
+    undoButton.click(function (event) {
+        undo();
+    });
+
+    restartButton.click(function (event) {
+        restart();
+    });
+});
