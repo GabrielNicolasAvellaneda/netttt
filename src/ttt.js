@@ -151,7 +151,7 @@ var Ttt = (function (Ttt) {
             ctx.save();
             ctx.translate((i % 3) * 0.333, (i / 3 | 0) * 0.333);
 
-            switch(this.getPiece(i)) {
+            switch (this.getPiece(i)) {
             case X:
                 ctx.strokeStyle = '#822';
                 drawPiece(ctx, X);
