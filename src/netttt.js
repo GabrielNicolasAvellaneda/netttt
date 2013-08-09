@@ -151,7 +151,13 @@ var NetTtt = (function (NetTtt) {
     };
 
     Individual.import = function Individual_import(i) { // "static"
-        return new Individual(Neural.Net.import(i));
+        var net = Neural.Net.import(i);
+        var sizes = net.getSizes();
+        if (sizes.length < 1 || sizes[0] !== 9 || sizes[sizes.length - 1] !== 9) {
+            throw new Error("NetTtt.Individual.import() needs a Neural.Net.import() object with input and output layer sizes of 9 nodes");
+        }
+
+        return new Individual(net);
     };
 
     function Generation(number, individuals) {

@@ -143,11 +143,15 @@ var Neural = (function (Neural) {
         };
     };
 
-    Net.import = function Net_import(exp) { // "static"
-        var n = new Net(getSizes(exp.thresholds));
-        n.setThresholds(exp.thresholds);
-        n.setWeights(exp.weights);
-        return n;
+    Net.import = function Net_import(n) { // "static"
+        if (!Array.isArray(n.thresholds) || !Array.isArray(n.weights)) {
+            throw new Error("Neural.Net.import() needs an object with Array properties thresholds and weights");
+        }
+
+        var net = new Net(getSizes(n.thresholds));
+        net.setThresholds(n.thresholds);
+        net.setWeights(n.weights);
+        return net;
     };
 
     // TODO: some way to mutate a net's dimensions.
