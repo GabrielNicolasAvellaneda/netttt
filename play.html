@@ -3,11 +3,38 @@
   <head>
     <meta charset="utf-8">
     <title>netttt - play</title>
+
+    <style>
+      body {
+        font-size: large;
+        font-family: sans-serif;
+      }
+      #play-area {
+        margin: 2em;
+      }
+      #settings, #controls {
+        margin: 1em;
+      }
+      #x-settings, #o-settings {
+        margin: 1ex;
+      }
+      #status {
+        width: 300px;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <div id="play-area">
       <canvas id="board" width="300" height="300"></canvas>
-      <p id="status">&nbsp;</p>
+      <div id="status"
+          data-empty="&nbsp;"
+          data-winner-x="X wins!"
+          data-winner-o="O wins!"
+          data-tie="Cat's game"
+          data-paused="AI paused"
+          data-thinking="Thinking..."
+      >&nbsp;</div>
     </div>
 
     <div id="settings">
@@ -20,7 +47,10 @@
           <option value="ai-neural">AI: neural net</option>
         </select>
         <br>
-        <textarea id="x-ai-neural-import" placeholder="Select &quot;AI: neural net&quot; &amp; paste in a net" disabled></textarea>
+        <textarea id="x-ai-neural-import"
+            placeholder="Select &quot;AI: neural net&quot; &amp; paste in a net"
+            disabled
+        ></textarea>
       </div>
       <div id="o-settings">
         O:
@@ -31,12 +61,16 @@
           <option value="ai-neural">AI: neural net</option>
         </select>
         <br>
-        <textarea id="o-ai-neural-import" placeholder="Select &quot;AI: neural net&quot; &amp; paste in a net" disabled></textarea>
+        <textarea id="o-ai-neural-import"
+            placeholder="Select &quot;AI: neural net&quot; &amp; paste in a net"
+            disabled
+        ></textarea>
       </div>
     </div>
 
     <div id="controls">
-      <input id="pause" type="button" value="Pause AI">
+      <input id="pause" type="button" value="Pause AI"
+          data-paused="Resume AI" data-unpaused="Pause AI">
       <input id="step" type="button" value="Step AI">
       <input id="undo" type="button" value="Undo">
       <input id="restart" type="button" value="Restart">

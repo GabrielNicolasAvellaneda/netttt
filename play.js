@@ -36,12 +36,12 @@ $(function () {
         redraw();
 
         switch (game.winner()) {
-        case Ttt.X: status.text("X wins!"); break;
-        case Ttt.O: status.text("O wins!"); break;
-        case Ttt.TIE: status.text("Cat's game"); break;
+        case Ttt.X: status.text(status.data('winner-x')); break;
+        case Ttt.O: status.text(status.data('winner-o')); break;
+        case Ttt.TIE: status.text(status.data('tie')); break;
         default:
             if (ais[game.turn] && paused) {
-                status.text("AI paused");
+                status.text(status.data('paused'));
             }
             else {
                 clearStatus();
@@ -54,13 +54,13 @@ $(function () {
         if (oControl.val() === 'ai-neural') oAiNeuralImport.removeAttr('disabled');
         else oAiNeuralImport.attr('disabled', true);
 
-        pauseButton.val(paused ? "Resume AI" : "Pause AI");
+        pauseButton.val(pauseButton.data(paused ? 'paused' : 'unpaused'));
 
         scheduleAiMove();
     }
 
     function clearStatus() {
-        status.html('&nbsp;');
+        status.text(status.data('empty'));
     }
 
     function redraw(highlightPiece) {
@@ -89,7 +89,7 @@ $(function () {
     function scheduleAiMove() {
         if (typeof aiTimerId === 'undefined' && game.winner() === 0 && ais[game.turn] && !paused) {
             aiTimerId = window.setInterval(makeAiMove, aiDelay);
-            status.text("Thinking...");
+            status.text(status.data('thinking'));
         }
     }
 
