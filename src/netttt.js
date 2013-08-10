@@ -72,6 +72,10 @@ var NetTtt = (function (NetTtt) {
     };
 
     Individual.prototype.tourney = function Individual_tourney() {
+        // TODO: don't play against random till it's already good.  Instead,
+        // play vs. a "dumb" Smart (depth 0 -- which may mean adding some code
+        // to Net to not invoke negamax at all, just order by current
+        // evaluation) and then the real Smart.  Or something.
         var opponents = [new Ai.Random(), new Ai.Smart()];
         for (var o in opponents) {
             for (var i = 0; i < 3; ++i) {
@@ -85,8 +89,6 @@ var NetTtt = (function (NetTtt) {
     Individual.prototype.clone = function Individual_clone() {
         return new Individual(this.net.clone());
     };
-
-    // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
 
     function realRand(min, max) {
         return Math.random() * (max - min) + min;

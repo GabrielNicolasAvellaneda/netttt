@@ -8,7 +8,7 @@
       body {
         font-family: sans-serif;
       }
-      #status {
+      #current {
         font-size: x-large;
       }
       .header {
@@ -30,9 +30,17 @@
     </style>
   </head>
   <body>
-    <div id="status" class="header"
-        data-template="Running generation {generation}"
-    >&nbsp;</div>
+    <div id="status">
+      <div id="current" class="header"
+          data-unpaused="Running generation {generation}..."
+          data-paused="Paused at generation {generation}"
+      >&nbsp;</div>
+      <div id="time"
+          data-template="Avg. time: {time}ms"
+      >&nbsp;</div>
+      <input id="pause" type="button" value="Pause"
+          data-paused="Resume" data-unpaused="Pause">
+    </div>
 
     <div id="stats">
       <canvas id="graph" width="400" height="200"></canvas>
@@ -82,9 +90,12 @@
     <div id="export">
       <div class="header">Top net source:</div>
       <textarea id="top-export" rows="16" cols="64"></textarea>
+      <!-- TODO: link to play with AI box filled in -->
       <br>
       <!-- TODO: <input id="import" type="button" value="Reset &amp; Import">-->
     </div>
+
+    <!-- TODO: links, about, etc. -->
 
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="src/ttt.js"></script>
