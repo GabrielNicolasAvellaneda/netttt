@@ -25,7 +25,10 @@ var Neural = (function (Neural) {
             for (var j = 0; j < sizes[i]; ++j) {
                 this.nodes[i][j] = {
                     input: 0,
-                    threshold: (typeof nodes === 'undefined' ? 1 : nodes[i][j].threshold),
+                    threshold: (typeof nodes === 'undefined'
+                        ? 1
+                        : nodes[i][j].threshold
+                    ),
                     weights: new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
                 };
                 if (typeof nodes !== 'undefined') {
@@ -145,7 +148,10 @@ var Neural = (function (Neural) {
 
     Net.import = function Net_import(n) { // "static"
         if (!Array.isArray(n.thresholds) || !Array.isArray(n.weights)) {
-            throw new Error("Neural.Net.import() needs an object with Array properties thresholds and weights");
+            throw new Error(
+                "Neural.Net.import() needs an object with Array properties "
+                + "thresholds and weights"
+            );
         }
 
         var net = new Net(getSizes(n.thresholds));

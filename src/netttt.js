@@ -33,7 +33,9 @@ var NetTtt = (function (NetTtt) {
         do {
             var move = players[game.turn].getMove(game);
             if (move < 0 || move >= 9 || game.getPiece(move) !== 0) {
-                throw new Error("AI chose invalid move " + move + " in " + game.toString());
+                throw new Error(
+                    "AI chose invalid move " + move + " in " + game.toString()
+                );
             }
 
             game.move(move);
@@ -43,7 +45,9 @@ var NetTtt = (function (NetTtt) {
         return {winner: winner, turns: turns};
     }
 
-    Individual.prototype.score = function Individual_score(result, myTurn, vsSmart) {
+    Individual.prototype.score = function Individual_score(
+        result, myTurn, vsSmart
+    ) {
         if (vsSmart && result.turns > this.maxAge) {
             this.maxAge = result.turns;
         }
@@ -98,18 +102,31 @@ var NetTtt = (function (NetTtt) {
         return v;
     }
 
-    function randomize(net, modifyChance, minThresh, maxThresh, minWeight, maxWeight) {
-        modifyChance = (typeof modifyChance === 'undefined' ? 0.001 : modifyChance);
+    function randomize(
+        net, modifyChance, minThresh, maxThresh, minWeight, maxWeight
+    ) {
+        modifyChance = (typeof modifyChance === 'undefined'
+            ? 0.001
+            : modifyChance
+        );
         minThresh = minThresh || -1000;
         maxThresh = maxThresh || 1000;
         minWeight = minWeight || -100;
         maxWeight = maxWeight || 100;
 
         net.eachNode(function (node, layer, index) {
-            node.threshold = randomizeValue(node.threshold, modifyChance, minThresh, maxThresh);
+            node.threshold = randomizeValue(
+                node.threshold,
+                modifyChance,
+                minThresh,
+                maxThresh
+            );
             for (var i = 0; i < node.weights.length; ++i) {
                 node.weights[i] = randomizeValue(
-                    (typeof node.weights[i] === 'undefined' ? 0 : node.weights[i]),
+                    (typeof node.weights[i] === 'undefined'
+                        ? 0
+                        : node.weights[i]
+                    ),
                     modifyChance, minWeight, maxWeight
                 );
             }
@@ -153,8 +170,13 @@ var NetTtt = (function (NetTtt) {
     Individual.import = function Individual_import(i) { // "static"
         var net = Neural.Net.import(i);
         var sizes = net.getSizes();
-        if (sizes.length < 1 || sizes[0] !== 9 || sizes[sizes.length - 1] !== 9) {
-            throw new Error("NetTtt.Individual.import() needs a Neural.Net.import() object with input and output layer sizes of 9 nodes");
+        if (sizes.length < 1 || sizes[0] !== 9
+            || sizes[sizes.length - 1] !== 9
+        ) {
+            throw new Error(
+                "NetTtt.Individual.import() needs a Neural.Net.import() "
+                + "object with input and output layer sizes of 9 nodes"
+            );
         }
 
         return new Individual(net);
@@ -181,7 +203,8 @@ var NetTtt = (function (NetTtt) {
         });
     };
 
-    Generation.prototype.getIndividuals = function Generation_getIndividuals() {
+    Generation.prototype.getIndividuals = function Generation_getIndividuals()
+    {
         var individuals = new Array(this.members.length);
         for (var i = 0; i < this.members.length; ++i) {
             individuals[i] = this.members[i].individual;
@@ -189,7 +212,9 @@ var NetTtt = (function (NetTtt) {
         return individuals;
     };
 
-    Generation.prototype.next = function Generation_next(oldIndividuals, clones, children) {
+    Generation.prototype.next = function Generation_next(
+        oldIndividuals, clones, children
+    ) {
         oldIndividuals = oldIndividuals || this.getIndividuals();
         clones = clones || 5;
         children = children || 10;
@@ -218,7 +243,8 @@ var NetTtt = (function (NetTtt) {
         return new Generation(this.number + 1, newIndividuals);
     }
 
-    Generation.newRandom = function Generation_newRandom(imported, size) { // "static"
+    // "static"
+    Generation.newRandom = function Generation_newRandom(imported, size) {
         imported = imported || [];
         size = size || 100;
 

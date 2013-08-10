@@ -21,8 +21,16 @@ var Ai = (function (Ai) {
         var scoringMoves = 0;
 
         for (var i = 0; i < 3; ++i) {
-            scoringMoves += scorer(pieces[i * 3 + 0], pieces[i * 3 + 1], pieces[i * 3 + 2]);
-            scoringMoves += scorer(pieces[i + 0], pieces[i + 3], pieces[i + 6]);
+            scoringMoves += scorer(
+                pieces[i * 3 + 0],
+                pieces[i * 3 + 1],
+                pieces[i * 3 + 2]
+            );
+            scoringMoves += scorer(
+                pieces[i + 0],
+                pieces[i + 3],
+                pieces[i + 6]
+            );
         }
         scoringMoves += scorer(pieces[0], pieces[4], pieces[8]);
         scoringMoves += scorer(pieces[2], pieces[4], pieces[6]);
@@ -55,7 +63,7 @@ var Ai = (function (Ai) {
     }
 
     function Smart(maxDepth) {
-        // Default to whole game (2 in our first moves table + 7 is the whole 9).
+        // Default to whole game (2 in first moves table + 7 is the whole 9).
         this.maxDepth = maxDepth || 7;
     }
 
@@ -95,8 +103,7 @@ var Ai = (function (Ai) {
 
     function blocksOpponent(board, move, turn) {
         var opponent = (turn === Ttt.X ? Ttt.O : Ttt.X);
-        return (
-            countNearWinsForPlayer(Ttt.move(board, move, turn), opponent)
+        return (countNearWinsForPlayer(Ttt.move(board, move, turn), opponent)
             < countNearWinsForPlayer(board, opponent)
         );
     }
@@ -105,9 +112,9 @@ var Ai = (function (Ai) {
     // choose the best one to play now.  If any moves are are an immediate win,
     // we simply pick among them randomly.  Otherwise, we choose moves blocking
     // an opponent's win, then we just pick the square with the highest
-    // evaluation.  If there are still moves that are equivalent after all that,
-    // we pick randomly.  Adding a random element keeps the opponent on their
-    // toes a little more than something entirely predictable.
+    // evaluation.  If there are still moves that are equivalent after all
+    // that, we pick randomly.  Adding a random element keeps the opponent on
+    // their toes a little more than something entirely predictable.
     function resolveTies(board, moves, turn) {
         if (moves.length > 1) {
             var win = false;
@@ -131,7 +138,9 @@ var Ai = (function (Ai) {
 
         if (moves.length > 1) {
             moves = topScoring(moves, function (move) {
-                return sign(turn) * Smart.evaluate(Ttt.move(board, move, turn));
+                return (sign(turn)
+                    * Smart.evaluate(Ttt.move(board, move, turn))
+                );
             }).moves;
         }
 
@@ -140,13 +149,13 @@ var Ai = (function (Ai) {
 
     // Basic negamax implementation, with a few modifications (see
     // <http://en.wikipedia.org/wiki/Negamax> or
-    // <http://www.hamedahmadi.com/gametree/>).  We don't use alpha-beta pruning
-    // because we don't just want to find the first valid move with the best
-    // score, we want to find all valid moves with the same (and best) score, so
-    // we can choose among them.  We pick from the best scoring moves with a
-    // simple heuristic (see resolveTies()).  Because we also use this to
-    // instruct us as to which move to make, if we're at the top level we return
-    // the move itself instead of the score of the best move.
+    // <http://www.hamedahmadi.com/gametree/>).  We don't use alpha-beta
+    // pruning because we don't just want to find the first valid move with the
+    // best score, we want to find all valid moves with the same (and best)
+    // score, so we can choose among them.  We pick from the best scoring moves
+    // with a simple heuristic (see resolveTies()).  Because we also use this
+    // to instruct us as to which move to make, if we're at the top level we
+    // return the move itself instead of the score of the best move.
     Smart.prototype.negamax = function Smart_negamax(board, turn, depth) {
         var winner = Ttt.winner(board);
         if (depth === this.maxDepth || winner) {
@@ -162,7 +171,10 @@ var Ai = (function (Ai) {
             );
         });
 
-        return (depth ? topScore.score : resolveTies(board, topScore.moves, turn));
+        return (depth
+            ? topScore.score
+            : resolveTies(board, topScore.moves, turn)
+        );
     };
 
     // A small lookup table for the second move, so we don't have to go through
