@@ -3,10 +3,88 @@
   <head>
     <meta charset="utf-8">
     <title>netttt</title>
+
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      #status {
+        font-size: x-large;
+      }
+      .header {
+        font-weight: bold;
+      }
+      #status, #stats, #demos, #export {
+        margin: 1em;
+      }
+      #graph, #leaderboard {
+        float: left;
+      }
+      .clear {
+        clear: both;
+      }
+      .demo-container {
+        float: left;
+        margin: 1ex;
+      }
+    </style>
   </head>
   <body>
-    <canvas id="board" width="300" height="300"></canvas>
-    <p id="winner"></p>
+    <div id="status" class="header"
+        data-template="Running generation {generation}"
+    >&nbsp;</div>
+
+    <div id="stats">
+      <canvas id="graph" width="400" height="200"></canvas>
+      <div id="leaderboard">
+        <div class="header">
+          Top ten nets:
+        </div>
+        <ol id="leaders">
+          <li id="leader-0"
+              data-template="Score: {score} from generation: {generation}"
+          ></li>
+          <li id="leader-1"></li>
+          <li id="leader-2"></li>
+          <li id="leader-3"></li>
+          <li id="leader-4"></li>
+          <li id="leader-5"></li>
+          <li id="leader-6"></li>
+          <li id="leader-7"></li>
+          <li id="leader-8"></li>
+          <li id="leader-9"></li>
+        </ol>
+      </div>
+    </div>
+    <div class="clear"></div>
+
+    <div id="demos">
+      <div class="header">Top net playing as:</div>
+      <div class="demo-container">
+        <div class="demo-header">X vs. random</div>
+        <canvas id="x-random-demo-board" width="150" height="150"></canvas>
+      </div>
+      <div class="demo-container">
+        <div class="demo-header">O vs. random</div>
+        <canvas id="o-random-demo-board" width="150" height="150"></canvas>
+      </div>
+      <div class="demo-container">
+        <div class="demo-header">X vs. smart</div>
+        <canvas id="x-smart-demo-board" width="150" height="150"></canvas>
+      </div>
+      <div class="demo-container">
+        <div class="demo-header">O vs. smart</div>
+        <canvas id="o-smart-demo-board" width="150" height="150"></canvas>
+      </div>
+    </div>
+    <div class="clear"></div>
+
+    <div id="export">
+      <div class="header">Top net source:</div>
+      <textarea id="top-export" rows="16" cols="64"></textarea>
+      <br>
+      <!-- TODO: <input id="import" type="button" value="Reset &amp; Import">-->
+    </div>
 
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="src/ttt.js"></script>

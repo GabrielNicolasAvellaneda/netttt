@@ -1,76 +1,89 @@
 "use strict";
 
-var game;
-var ai;
+var generation;
+var best = [];
 
 $(function () {
-    game = new Ttt.Game();
-    ai = new Ai.Smart();
-
-    var board = $('#board');
-    var aiPlayer = ($.inArray('ai=x', window.location.search.substr(1).split('&')) !== -1 ? Ttt.X : Ttt.O);
-
-    function redraw(highlightPiece) {
-        game.draw(board[0].getContext('2d'), board.width(), board.height(), 0, 0, highlightPiece);
+    var i;
+    for (i = 0; i < 10; ++i) {
+        best[i] = {fitness: -Infinity};
     }
+    generation = NetTtt.Generation.newRandom();
 
-    function getSquare(x, y) {
-        var col = (x - board.offset().left) / board.width() * 3 | 0;
-        var row = (y - board.offset().top) / board.height() * 3 | 0;
-        return col + row * 3;
+    var status = $('#status');
+    var graph = $('#graph');
+    var leaders = [];
+    for (i = 0; i < 10; ++i) {
+        leaders[i] = $('#leader-' + i);
     }
+    var topExport = $('#top-export');
+    var runTimerId;
 
-    function move(square) {
-        game.move(square);
+    scheduleRun();
 
-        switch (game.winner()) {
-        case Ttt.X:
-            $('#winner').text('X wins!');
-            break;
-
-        case Ttt.O:
-            $('#winner').text('O wins!');
-            break;
-
-        case Ttt.TIE:
-            $('#winner').text("Cat's game");
-            break;
+    function scheduleRun() {
+        if (typeof runTimerId === 'undefined') {
+            runTimerId = window.setInterval(run, 100);
         }
-
-        redraw();
     }
 
-    board.mousemove(function (event) {
-        if (game.winner() === 0) {
-            redraw(getSquare(event.pageX, event.pageY));
+    function cancelRun() {
+        if (typeof runTimerId !== 'undefined') {
+            window.clearInterval(runTimerId);
+            runTimerId = undefined;
         }
-    });
+    }
 
-    board.mouseleave(function (event) {
-        redraw();
-    });
+    function run() {
+        cancelRun();
 
-    board.click(function (event) {
-        var square = getSquare(event.pageX, event.pageY);
-        if (game.winner() === 0 && game.getPiece(square) === 0) {
-            move(square);
+        status.text(status.data('template').replace('{generation}', generation.number.toString()));
 
-            if (game.winner() === 0) {
-                square = ai.getMove(game);
-                if (square >= 0 && square < 9 && game.getPiece(square) === 0) {
-                    move(square);
-                }
-                else {
-                    $('#winner').text('AI chose invalid move ' + square);
-                }
+        generation.run();
+        score();
+        drawGraph();
+
+        generation = generation.next();
+
+        scheduleRun();
+    }
+
+    function score() {
+        var anyChanged = false;
+        var genIndex = 0;
+        for (var i = 0; i < 10; ++i) {
+            if (best[i].fitness < generation.members[genIndex].fitness) {
+                best.splice(i, 0, generation.members[genIndex++]);
+                best[i].generation = generation.number;
+                anyChanged = true;
             }
         }
-    });
 
-    if (aiPlayer === Ttt.X) {
-        move(ai.getMove(game));
+        if (anyChanged) {
+            best = best.slice(0, 10);
+            bestChanged();
+        }
     }
-    else {
-        redraw();
+
+    function bestChanged() {
+        for (var i = 0; i < 10; ++i) {
+            leaders[i].text(
+                leaders[0].data('template')
+                .replace('{score}', best[i].fitness.toString())
+                .replace('{generation}', best[i].generation.toString())
+            );
+        }
+
+        topExport.text(JSON.stringify(best[0].individual.export()));
     }
+
+    function drawGraph() {
+        // TODO
+    }
+
+    // TODO: 1-generation timer.
+    // TODO: look into why the score is so level.  Maybe keep <= instead of <?
+    // TODO: export selector to choose among the top 10.
+
+    // TODO: use parallel.js to do work in the background.
 });
