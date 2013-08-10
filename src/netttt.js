@@ -189,27 +189,30 @@ var NetTtt = (function (NetTtt) {
         return individuals;
     };
 
-    Generation.prototype.next = function Generation_next(oldIndividuals, clones, contributors) {
-        clones = clones || 5;
-        contributors = contributors || 10;
+    Generation.prototype.next = function Generation_next(oldIndividuals, clones, children) {
         oldIndividuals = oldIndividuals || this.getIndividuals();
-
-        var children = oldIndividuals.length / contributors;
-        var lastChildren = children - clones;
+        clones = clones || 5;
+        children = children || 10;
 
         var newIndividuals = [];
         var i;
+
         for (i = 0; i < clones; ++i) {
             newIndividuals.push(oldIndividuals[i].clone());
         }
 
-        for (i = 0; i < contributors - 1; ++i) {
-            for (var j = 0; j < children; ++j) {
-                newIndividuals.push(oldIndividuals[i].reproduce());
+        // Start with 10 children from the best, 9 from the second best, etc.,
+        // until we're eventually just asking each node for one child and we
+        // fill up on individuals.
+        var reproducer = 0;
+        while (newIndividuals.length < oldIndividuals.length) {
+            for (i = 0; i < children; ++i) {
+                newIndividuals.push(oldIndividuals[reproducer].reproduce());
             }
-        }
-        for (i = 0; i < lastChildren; ++i) {
-            newIndividuals.push(oldIndividuals[contributors - 1].reproduce());
+            if (children > 1) {
+                --children;
+            }
+            ++reproducer;
         }
 
         return new Generation(this.number + 1, newIndividuals);
