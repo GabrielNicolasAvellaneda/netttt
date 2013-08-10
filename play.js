@@ -9,18 +9,19 @@ $(function () {
     ais[Ttt.X] = null;
     ais[Ttt.O] = null;
 
+    var $board = $('#board');
+    var $status = $('#status');
+    var $xControl = $('#x-control');
+    var $xAiNeuralImport = $('#x-ai-neural-import');
+    var $oControl = $('#o-control');
+    var $oAiNeuralImport = $('#o-ai-neural-import');
+    var $pauseButton = $('#pause');
+    var $stepButton = $('#step');
+    var $undoButton = $('#undo');
+    var $restartButton = $('#restart');
+
+    var boardCtx = $board[0].getContext('2d');
     var paused = false;
-    var board = $('#board');
-    var boardCtx = board[0].getContext('2d');
-    var status = $('#status');
-    var xControl = $('#x-control');
-    var xAiNeuralImport = $('#x-ai-neural-import');
-    var oControl = $('#o-control');
-    var oAiNeuralImport = $('#o-ai-neural-import');
-    var pauseButton = $('#pause');
-    var stepButton = $('#step');
-    var undoButton = $('#undo');
-    var restartButton = $('#restart');
     var aiTimerId = undefined;
 
     restart();
@@ -36,12 +37,12 @@ $(function () {
         redraw();
 
         switch (game.winner()) {
-        case Ttt.X: status.text(status.data('winner-x')); break;
-        case Ttt.O: status.text(status.data('winner-o')); break;
-        case Ttt.TIE: status.text(status.data('tie')); break;
+        case Ttt.X: $status.text($status.data('winner-x')); break;
+        case Ttt.O: $status.text($status.data('winner-o')); break;
+        case Ttt.TIE: $status.text($status.data('tie')); break;
         default:
             if (ais[game.turn] && paused) {
-                status.text(status.data('paused'));
+                $status.text($status.data('paused'));
             }
             else {
                 clearStatus();
@@ -49,22 +50,22 @@ $(function () {
             break;
         }
 
-        if (xControl.val() === 'ai-neural') xAiNeuralImport.removeAttr('disabled');
-        else xAiNeuralImport.attr('disabled', true);
-        if (oControl.val() === 'ai-neural') oAiNeuralImport.removeAttr('disabled');
-        else oAiNeuralImport.attr('disabled', true);
+        if ($xControl.val() === 'ai-neural') $xAiNeuralImport.removeAttr('disabled');
+        else $xAiNeuralImport.attr('disabled', true);
+        if ($oControl.val() === 'ai-neural') $oAiNeuralImport.removeAttr('disabled');
+        else $oAiNeuralImport.attr('disabled', true);
 
-        pauseButton.val(pauseButton.data(paused ? 'paused' : 'unpaused'));
+        $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
 
         scheduleAiMove();
     }
 
     function clearStatus() {
-        status.text(status.data('empty'));
+        $status.text($status.data('empty'));
     }
 
     function redraw(highlightPiece) {
-        game.draw(boardCtx, board.width(), board.height(), 0, 0, highlightPiece);
+        game.draw(boardCtx, $board.width(), $board.height(), 0, 0, highlightPiece);
     }
 
     function setPaused(p) {
@@ -89,7 +90,7 @@ $(function () {
     function scheduleAiMove() {
         if (typeof aiTimerId === 'undefined' && game.winner() === 0 && ais[game.turn] && !paused) {
             aiTimerId = window.setInterval(makeAiMove, aiDelay);
-            status.text(status.data('thinking'));
+            $status.text($status.data('thinking'));
         }
     }
 
@@ -119,11 +120,11 @@ $(function () {
 
     function setAiFromSelect(turn) {
         var ai = null;
-        switch ((turn === Ttt.X ? xControl : oControl).val()) {
+        switch ((turn === Ttt.X ? $xControl : $oControl).val()) {
         case 'ai-random': ai = new Ai.Random(); break;
         case 'ai-smart': ai = new Ai.Smart(); break;
         case 'ai-neural':
-            var importBox = (turn === Ttt.X ? xAiNeuralImport : oAiNeuralImport);
+            var importBox = (turn === Ttt.X ? $xAiNeuralImport : $oAiNeuralImport);
             if (importBox.val().length > 0) {
                 try {
                     var obj = $.parseJSON(importBox.val());
@@ -141,59 +142,59 @@ $(function () {
     }
 
     function getSquare(x, y) {
-        var col = (x - board.offset().left) / board.width() * 3 | 0;
-        var row = (y - board.offset().top) / board.height() * 3 | 0;
+        var col = (x - $board.offset().left) / $board.width() * 3 | 0;
+        var row = (y - $board.offset().top) / $board.height() * 3 | 0;
         return col + row * 3;
     }
 
-    board.mousemove(function (event) {
+    $board.mousemove(function (event) {
         if (!ais[game.turn] && game.winner() === 0) {
             redraw(getSquare(event.pageX, event.pageY));
         }
     });
 
-    board.mouseleave(function (event) {
+    $board.mouseleave(function (event) {
         if (!ais[game.turn] && game.winner() === 0) {
             redraw();
         }
     });
 
-    board.click(function (event) {
+    $board.click(function (event) {
         var square = getSquare(event.pageX, event.pageY);
         if (!ais[game.turn] && game.winner() === 0 && game.getPiece(square) === 0) {
             move(square);
         }
     });
 
-    xControl.change(function (event) {
+    $xControl.change(function (event) {
         setAiFromSelect(Ttt.X);
     });
 
-    xAiNeuralImport.change(function (event) {
+    $xAiNeuralImport.change(function (event) {
         setAiFromSelect(Ttt.X);
     });
 
-    oControl.change(function (event) {
+    $oControl.change(function (event) {
         setAiFromSelect(Ttt.O);
     });
 
-    oAiNeuralImport.change(function (event) {
+    $oAiNeuralImport.change(function (event) {
         setAiFromSelect(Ttt.O);
     });
 
-    pauseButton.click(function (event) {
+    $pauseButton.click(function (event) {
         setPaused(!paused);
     });
 
-    stepButton.click(function (event) {
+    $stepButton.click(function (event) {
         makeAiMove();
     });
 
-    undoButton.click(function (event) {
+    $undoButton.click(function (event) {
         undo();
     });
 
-    restartButton.click(function (event) {
+    $restartButton.click(function (event) {
         restart();
     });
 });
