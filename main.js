@@ -23,21 +23,14 @@ $(function () {
     }
     var $topExport = $('#top-export');
 
+    var graphCtx = $graph[0].getContext('2d');
     var paused = false;
     var avgTime = 0;
+    var lowestScore = Infinity;
+    var highestScore = -Infinity;
     var runTimerId = undefined;
 
     scheduleRun();
-
-    function update() {
-        $current.text($current.data(paused ? 'paused' : 'unpaused')
-            .replace('{generation}', generation.number.toString())
-        );
-        if (avgTime > 0) {
-            $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
-        }
-        $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
-    }
 
     function scheduleRun() {
         if (typeof runTimerId === 'undefined' && !paused) {
@@ -52,6 +45,16 @@ $(function () {
             window.clearInterval(runTimerId);
             runTimerId = undefined;
         }
+    }
+
+    function update() {
+        $current.text($current.data(paused ? 'paused' : 'unpaused')
+            .replace('{generation}', generation.number.toString())
+        );
+        if (avgTime > 0) {
+            $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
+        }
+        $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
     }
 
     function time(f) {
@@ -70,7 +73,7 @@ $(function () {
         avgTime = (ms + avgTime * generation.number) / (generation.number + 1);
 
         score();
-        drawGraph();
+        drawGraph(graphCtx, $graph.width(), $graph.height());
 
         generation = generation.next();
 
@@ -103,11 +106,20 @@ $(function () {
             sum += generation.members[i].fitness;
         }
 
-        scores.push({
+        var score = {
             top: generation.members[0].fitness,
             topTen: sumTopTen / 10,
             avg: sum / generation.members.length
+        };
+        ['top', 'topTen', 'avg'].forEach(function (s) {
+            if (score[s] < lowestScore) {
+                lowestScore = score[s];
+            }
+            if (score[s] > highestScore) {
+                highestScore = score[s];
+            }
         });
+        scores.push(score);
     }
 
     function bestChanged() {
@@ -122,8 +134,28 @@ $(function () {
         $topExport.text(JSON.stringify(best[0].individual.export()));
     }
 
-    function drawGraph() {
-        // TODO
+    function drawGraph(ctx, width, height) {
+        var yScale = height / (highestScore - lowestScore);
+        var xStep = width / scores.length;
+
+        ctx.save();
+
+        ctx.clearRect(0, 0, width, height);
+        [{s: '#44f', p: 'avg'}, {s: '#4f4', p: 'topTen'}, {s: '#f44', p: 'top'}].forEach(function (which) {
+            ctx.strokeStyle = which.s;
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            var x = 0;
+            for (var i = 0; i < scores.length; ++i) {
+                x += xStep;
+                ctx.lineTo(x, height - (scores[i][which.p] - lowestScore) * yScale);
+            }
+            ctx.stroke();
+        });
+
+        // TODO: legend
+
+        ctx.restore();
     }
 
     function setPaused(p) {
