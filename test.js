@@ -26,9 +26,7 @@ test("making moves is internally consistent", function () {
 
 test("win conditions", function () {
     var b;
-    for (var piece in [Ttt.X, Ttt.O]) {
-        piece = [Ttt.X, Ttt.O][piece];
-
+    [Ttt.X, Ttt.O].forEach(function (piece) {
         for (var i = 0; i < 3; ++i) {
             b = Ttt.newBoard();
             b = Ttt.move(b, i * 3 + 0, piece);
@@ -54,7 +52,7 @@ test("win conditions", function () {
         b = Ttt.move(b, 4, piece);
         b = Ttt.move(b, 6, piece);
         strictEqual(Ttt.winner(b), piece, (piece === Ttt.X ? "X" : "O") + " wins, diagonal 1");
-    }
+    });
 
     b = Ttt.newBoard();
     b = Ttt.move(b, 0, Ttt.X);

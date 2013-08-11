@@ -84,9 +84,7 @@ var Ai = (function (Ai) {
         var max = -Infinity;
         var top = [];
 
-        for (var move in moves) {
-            move = moves[move];
-
+        moves.forEach(function (move) {
             var value = evaluator(move);
 
             if (value > max) {
@@ -96,7 +94,7 @@ var Ai = (function (Ai) {
             else if (value === max) {
                 top.push(move);
             }
-        }
+        });
 
         return {score: max, moves: top};
     }

@@ -76,13 +76,12 @@ var NetTtt = (function (NetTtt) {
         // play vs. a "dumb" Smart (depth 0 -- which may mean adding some code
         // to Net to not invoke negamax at all, just order by current
         // evaluation) and then the real Smart.  Or something.
-        var opponents = [new Ai.Random(), new Ai.Smart()];
-        for (var o in opponents) {
+        [new Ai.Random(), new Ai.Smart()].forEach(function (opponent) {
             for (var i = 0; i < 3; ++i) {
-                this.match(opponents[o], Ttt.X);
-                this.match(opponents[o], Ttt.O);
+                this.match(opponent, Ttt.X);
+                this.match(opponent, Ttt.O);
             }
-        }
+        }, this);
         return this.getScore();
     };
 
