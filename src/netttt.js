@@ -1,9 +1,13 @@
 var NetTtt = (function (NetTtt) {
     "use strict";
 
-    function Individual(net) {
+    function Individual(net, score) {
         this.net = net;
-        this.reset();
+        this.score = score || {
+            maxAge: 0,
+            wins: 0,
+            losses: 0
+        }
     }
 
     // We play three games as both X and O against both the random and smart
@@ -12,14 +16,8 @@ var NetTtt = (function (NetTtt) {
     // turns).  See getScore() for how that adds up to 69.
     Individual.PERFECT_SCORE = 69;
 
-    Individual.prototype.reset = function Individual_reset() {
-        this.maxAge = 0;
-        this.wins = 0;
-        this.losses = 0;
-    }
-
     Individual.prototype.getScore = function Individual_getScore() {
-        return (this.wins - this.losses) * 10 + this.maxAge;
+        return (this.score.wins - this.score.losses) * 10 + this.score.maxAge;
     };
 
     function play(x, o) {
@@ -45,21 +43,21 @@ var NetTtt = (function (NetTtt) {
         return {winner: winner, turns: turns};
     }
 
-    Individual.prototype.score = function Individual_score(
+    Individual.prototype.doScore = function Individual_doScore(
         result, myTurn, vsSmart
     ) {
-        if (vsSmart && result.turns > this.maxAge) {
-            this.maxAge = result.turns;
+        if (vsSmart && result.turns > this.score.maxAge) {
+            this.score.maxAge = result.turns;
         }
 
         if (result.winner === myTurn) {
             if (vsSmart) {
                 throw new Error("Smart AI should never lose");
             }
-            this.wins++;
+            this.score.wins++;
         }
         else if (result.winner !== Ttt.TIE) {
-            this.losses++;
+            this.score.losses++;
         }
     };
 
@@ -68,7 +66,7 @@ var NetTtt = (function (NetTtt) {
         var x = (myTurn === Ttt.X ? ai : opponent);
         var o = (myTurn === Ttt.X ? opponent : ai);
 
-        this.score(play(x, o), myTurn, opponent instanceof Ai.Smart);
+        this.doScore(play(x, o), myTurn, opponent instanceof Ai.Smart);
     };
 
     Individual.prototype.tourney = function Individual_tourney() {
@@ -183,24 +181,28 @@ var NetTtt = (function (NetTtt) {
         return new Individual(net);
     };
 
-    function Generation(number, individuals) {
-        this.number = number;
+    function Generation(individuals, number) {
+        this.number = number || 0;
         this.members = new Array(individuals.length);
         for (var i = 0; i < individuals.length; ++i) {
             this.members[i] = {
                 individual: individuals[i],
-                fitness: -Infinity
+                score: -Infinity
             };
         }
     }
 
     Generation.prototype.run = function Generation_run() {
         for (var i = 0; i < this.members.length; ++i) {
-            this.members[i].fitness = this.members[i].individual.tourney();
+            this.members[i].score = this.members[i].individual.tourney();
         }
 
-        this.members.sort(function (a, b) { // By fitness descending.
-            return (b.fitness - a.fitness);
+        this.order();
+    };
+
+    Generation.prototype.order = function Generation_order() {
+        this.members.sort(function (a, b) { // By score descending.
+            return (b.score - a.score);
         });
     };
 
@@ -241,7 +243,7 @@ var NetTtt = (function (NetTtt) {
             ++reproducer;
         }
 
-        return new Generation(this.number + 1, newIndividuals);
+        return new Generation(newIndividuals, this.number + 1);
     }
 
     // "static"
@@ -257,7 +259,7 @@ var NetTtt = (function (NetTtt) {
         for (; i < size; ++i) {
             individuals[i] = Individual.newRandom();
         }
-        return new Generation(0, individuals);
+        return new Generation(individuals, 0);
     }
 
     NetTtt.Individual = Individual;

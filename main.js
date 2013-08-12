@@ -10,7 +10,7 @@ $(function () {
     generation = NetTtt.Generation.newRandom();
     var i;
     for (i = 0; i < 10; ++i) {
-        best[i] = {fitness: -Infinity};
+        best[i] = {score: -Infinity};
     }
 
     var $current = $('#current');
@@ -85,7 +85,7 @@ $(function () {
         var genIndex = 0;
         var i;
         for (i = 0; i < 10; ++i) {
-            if (best[i].fitness < generation.members[genIndex].fitness) {
+            if (best[i].score < generation.members[genIndex].score) {
                 best.splice(i, 0, generation.members[genIndex++]);
                 best[i].generation = generation.number;
                 anyChanged = true;
@@ -101,13 +101,13 @@ $(function () {
         var sum = 0;
         for (i = 0; i < generation.members.length; ++i) {
             if (i < 10) {
-                sumTopTen += generation.members[i].fitness;
+                sumTopTen += generation.members[i].score;
             }
-            sum += generation.members[i].fitness;
+            sum += generation.members[i].score;
         }
 
         var score = {
-            top: generation.members[0].fitness,
+            top: generation.members[0].score,
             topTen: sumTopTen / 10,
             avg: sum / generation.members.length
         };
@@ -126,7 +126,7 @@ $(function () {
         for (var i = 0; i < 10; ++i) {
             $leaders[i].text(
                 $leaders[0].data('template')
-                .replace('{score}', best[i].fitness.toString())
+                .replace('{score}', best[i].score.toString())
                 .replace('{generation}', best[i].generation.toString())
             );
         }
