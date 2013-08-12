@@ -1,6 +1,6 @@
-"use strict";
-
 var Ai = (function (Ai) {
+    "use strict";
+
     function Random() {
     }
 

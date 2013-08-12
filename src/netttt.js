@@ -1,6 +1,6 @@
-"use strict";
-
 var NetTtt = (function (NetTtt) {
+    "use strict";
+
     function Individual(net) {
         this.net = net;
         this.reset();

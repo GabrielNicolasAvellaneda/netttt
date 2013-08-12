@@ -1,6 +1,6 @@
-"use strict";
-
 var Neural = (function (Neural) {
+    "use strict";
+
     function getSizes(nodes) {
         var sizes = new Array(nodes.length);
         for (var i = 0; i < nodes.length; ++i) {

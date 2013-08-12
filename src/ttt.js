@@ -1,7 +1,7 @@
-// Can't use strict mode because I'm using octal literals.  Great.
-//"use strict";
-
 var Ttt = (function (Ttt) {
+    // Can't use strict mode because I'm using octal literals.  Great.
+    //"use strict";
+
     var X = 1;
     var O = 3;
     var TIE = -1;
