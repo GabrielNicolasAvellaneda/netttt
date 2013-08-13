@@ -96,7 +96,10 @@ var Ai = (function (Ai) {
             }
         });
 
-        return {score: max, moves: top};
+        return {
+            score: max,
+            moves: top
+        };
     }
 
     function blocksOpponent(board, move, turn) {

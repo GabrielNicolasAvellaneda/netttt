@@ -1,7 +1,8 @@
 var NetTtt = (function (NetTtt) {
     "use strict";
 
-    function Individual(net, score) {
+    function Individual(id, net, score) {
+        this.id = id;
         this.net = net;
         this.score = score || {
             maxAge: 0,
@@ -40,7 +41,10 @@ var NetTtt = (function (NetTtt) {
             ++turns;
         } while (!(winner = game.winner()));
 
-        return {winner: winner, turns: turns};
+        return {
+            winner: winner,
+            turns: turns
+        };
     }
 
     Individual.prototype.doScore = function Individual_doScore(
@@ -83,8 +87,8 @@ var NetTtt = (function (NetTtt) {
         return this.getScore();
     };
 
-    Individual.prototype.clone = function Individual_clone() {
-        return new Individual(this.net.clone());
+    Individual.prototype.clone = function Individual_clone(id) {
+        return new Individual(id, this.net.clone());
     };
 
     function realRand(min, max) {
@@ -150,24 +154,35 @@ var NetTtt = (function (NetTtt) {
         return sizes;
     }
 
-    Individual.newRandom = function Individual_newRandom() { // "static"
-        return new Individual(randomize(new Neural.Net(randomSizes()), 1));
+    Individual.newRandom = function Individual_newRandom(id) { // "static"
+        return new Individual(id, randomize(new Neural.Net(randomSizes()), 1));
     }
 
-    Individual.prototype.reproduce = function Individual_reproduce() {
+    Individual.prototype.reproduce = function Individual_reproduce(id) {
         // TODO: small random chance of adding/removing a whole internal layer,
         // or a node within an internal layer (extra weights/thresholds made up
         // randomly?).
 
-        return new Individual(randomize(this.net.clone()));
+        return new Individual(id, randomize(this.net.clone()));
     };
 
     Individual.prototype.export = function Individual_export() {
-        return this.net.export();
+        return {
+            id: this.id,
+            net: this.net.export()
+        };
     };
 
-    Individual.import = function Individual_import(i) { // "static"
-        var net = Neural.Net.import(i);
+    Individual.import = function Individual_import(obj) { // "static"
+        if (typeof obj.id === 'undefined' || typeof obj.net === 'undefined') {
+            throw new Error(
+                "NetTtt.Individual.import() needs an object with properties "
+                + "id and net"
+            );
+        }
+
+        var id = obj.id;
+        var net = Neural.Net.import(obj.net);
         var sizes = net.getSizes();
         if (sizes.length < 1 || sizes[0] !== 9
             || sizes[sizes.length - 1] !== 9
@@ -178,11 +193,11 @@ var NetTtt = (function (NetTtt) {
             );
         }
 
-        return new Individual(net);
+        return new Individual(id, net);
     };
 
-    function Generation(individuals, number) {
-        this.number = number || 0;
+    function Generation(id, individuals) {
+        this.id = id || 0;
         this.members = new Array(individuals.length);
         for (var i = 0; i < individuals.length; ++i) {
             this.members[i] = {
@@ -196,8 +211,6 @@ var NetTtt = (function (NetTtt) {
         for (var i = 0; i < this.members.length; ++i) {
             this.members[i].score = this.members[i].individual.tourney();
         }
-
-        this.order();
     };
 
     Generation.prototype.order = function Generation_order() {
@@ -216,8 +229,9 @@ var NetTtt = (function (NetTtt) {
     };
 
     Generation.prototype.next = function Generation_next(
-        oldIndividuals, clones, children
+        id, oldIndividuals, clones, children
     ) {
+        id = id || this.id + 1;
         oldIndividuals = oldIndividuals || this.getIndividuals();
         clones = clones || 5;
         children = children || 10;
@@ -226,7 +240,7 @@ var NetTtt = (function (NetTtt) {
         var i;
 
         for (i = 0; i < clones; ++i) {
-            newIndividuals.push(oldIndividuals[i].clone());
+            newIndividuals.push(oldIndividuals[i].clone(newIndividuals.length));
         }
 
         // Start with 10 children from the best, 9 from the second best, etc.,
@@ -235,7 +249,9 @@ var NetTtt = (function (NetTtt) {
         var reproducer = 0;
         while (newIndividuals.length < oldIndividuals.length) {
             for (i = 0; i < children; ++i) {
-                newIndividuals.push(oldIndividuals[reproducer].reproduce());
+                newIndividuals.push(
+                    oldIndividuals[reproducer].reproduce(newIndividuals.length)
+                );
             }
             if (children > 1) {
                 --children;
@@ -243,11 +259,12 @@ var NetTtt = (function (NetTtt) {
             ++reproducer;
         }
 
-        return new Generation(newIndividuals, this.number + 1);
+        return new Generation(id, newIndividuals);
     }
 
     // "static"
-    Generation.newRandom = function Generation_newRandom(imported, size) {
+    Generation.newRandom = function Generation_newRandom(id, imported, size) {
+        id = id || 0;
         imported = imported || [];
         size = size || 100;
 
@@ -255,11 +272,12 @@ var NetTtt = (function (NetTtt) {
         var i;
         for (i = 0; i < imported.length; ++i) {
             individuals[i] = imported[i];
+            // Assume imported individuals have the correct id.
         }
         for (; i < size; ++i) {
-            individuals[i] = Individual.newRandom();
+            individuals[i] = Individual.newRandom(i);
         }
-        return new Generation(individuals, 0);
+        return new Generation(id, individuals);
     }
 
     NetTtt.Individual = Individual;

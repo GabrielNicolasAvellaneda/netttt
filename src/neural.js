@@ -146,17 +146,17 @@ var Neural = (function (Neural) {
         };
     };
 
-    Net.import = function Net_import(n) { // "static"
-        if (!Array.isArray(n.thresholds) || !Array.isArray(n.weights)) {
+    Net.import = function Net_import(obj) { // "static"
+        if (!Array.isArray(obj.thresholds) || !Array.isArray(obj.weights)) {
             throw new Error(
                 "Neural.Net.import() needs an object with Array properties "
                 + "thresholds and weights"
             );
         }
 
-        var net = new Net(getSizes(n.thresholds));
-        net.setThresholds(n.thresholds);
-        net.setWeights(n.weights);
+        var net = new Net(getSizes(obj.thresholds));
+        net.setThresholds(obj.thresholds);
+        net.setWeights(obj.weights);
         return net;
     };
 

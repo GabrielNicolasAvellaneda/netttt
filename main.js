@@ -49,7 +49,7 @@ $(function () {
 
     function update() {
         $current.text($current.data(paused ? 'paused' : 'unpaused')
-            .replace('{generation}', generation.number.toString())
+            .replace('{generation}', generation.id.toString())
         );
         if (avgTime > 0) {
             $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
@@ -69,8 +69,9 @@ $(function () {
 
         var ms = time(function () {
             generation.run();
+            generation.order();
         });
-        avgTime = (ms + avgTime * generation.number) / (generation.number + 1);
+        avgTime = (ms + avgTime * generation.id) / (generation.id + 1);
 
         score();
         drawGraph(graphCtx, $graph.width(), $graph.height());
@@ -87,7 +88,7 @@ $(function () {
         for (i = 0; i < 10; ++i) {
             if (best[i].score < generation.members[genIndex].score) {
                 best.splice(i, 0, generation.members[genIndex++]);
-                best[i].generation = generation.number;
+                best[i].generation = generation.id;
                 anyChanged = true;
             }
         }
