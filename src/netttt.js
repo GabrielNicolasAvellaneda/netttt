@@ -33,7 +33,8 @@ var NetTtt = (function (NetTtt) {
             var move = players[game.turn].getMove(game);
             if (move < 0 || move >= 9 || game.getPiece(move) !== 0) {
                 throw new Error(
-                    "AI chose invalid move " + move + " in " + game.toString()
+                    "AI chose invalid move " + move.toString()
+                    + " in " + game.toString()
                 );
             }
 
@@ -117,7 +118,7 @@ var NetTtt = (function (NetTtt) {
         minWeight = minWeight || -100;
         maxWeight = maxWeight || 100;
 
-        net.eachNode(function (node, layer, index) {
+        net.eachNode(function (node) {
             node.threshold = randomizeValue(
                 node.threshold,
                 modifyChance,
@@ -126,11 +127,7 @@ var NetTtt = (function (NetTtt) {
             );
             for (var i = 0; i < node.weights.length; ++i) {
                 node.weights[i] = randomizeValue(
-                    (typeof node.weights[i] === 'undefined'
-                        ? 0
-                        : node.weights[i]
-                    ),
-                    modifyChance, minWeight, maxWeight
+                    node.weights[i] || 0, modifyChance, minWeight, maxWeight
                 );
             }
         });
@@ -198,19 +195,18 @@ var NetTtt = (function (NetTtt) {
 
     function Generation(id, individuals) {
         this.id = id || 0;
-        this.members = new Array(individuals.length);
-        for (var i = 0; i < individuals.length; ++i) {
-            this.members[i] = {
-                individual: individuals[i],
+        this.members = individuals.map(function (i) {
+            return {
+                individual: i,
                 score: -Infinity
             };
-        }
+        });
     }
 
     Generation.prototype.run = function Generation_run() {
-        for (var i = 0; i < this.members.length; ++i) {
-            this.members[i].score = this.members[i].individual.tourney();
-        }
+        this.members.forEach(function (m) {
+            m.score = m.individual.tourney();
+        });
     };
 
     Generation.prototype.order = function Generation_order() {
@@ -219,13 +215,11 @@ var NetTtt = (function (NetTtt) {
         });
     };
 
-    Generation.prototype.getIndividuals = function Generation_getIndividuals()
-    {
-        var individuals = new Array(this.members.length);
-        for (var i = 0; i < this.members.length; ++i) {
-            individuals[i] = this.members[i].individual;
-        }
-        return individuals;
+    Generation.prototype.getIndividuals = function Generation_getIndividuals(
+    ) {
+        return this.members.map(function (m) {
+            return m.individual;
+        });
     };
 
     Generation.prototype.next = function Generation_next(
@@ -240,7 +234,9 @@ var NetTtt = (function (NetTtt) {
         var i;
 
         for (i = 0; i < clones; ++i) {
-            newIndividuals.push(oldIndividuals[i].clone(newIndividuals.length));
+            newIndividuals.push(
+                oldIndividuals[i].clone(newIndividuals.length)
+            );
         }
 
         // Start with 10 children from the best, 9 from the second best, etc.,

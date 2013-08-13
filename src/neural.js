@@ -2,11 +2,9 @@ var Neural = (function (Neural) {
     "use strict";
 
     function getSizes(nodes) {
-        var sizes = new Array(nodes.length);
-        for (var i = 0; i < nodes.length; ++i) {
-            sizes[i] = nodes[i].length;
-        }
-        return sizes;
+        return nodes.map(function (layer) {
+            return layer.length;
+        });
     }
 
     function Net(sizesOrNodes) {
@@ -19,31 +17,36 @@ var Neural = (function (Neural) {
             sizes = sizesOrNodes;
         }
 
-        this.nodes = new Array(sizes.length);
-        for (var i = 0; i < sizes.length; ++i) {
-            this.nodes[i] = new Array(sizes[i]);
-            for (var j = 0; j < sizes[i]; ++j) {
-                this.nodes[i][j] = {
+        this.nodes = sizes.map(function (size, i) {
+            var layer = new Array(size);
+            for (var j = 0; j < size; ++j) {
+                layer[j] = {
                     input: 0,
                     threshold: (typeof nodes === 'undefined'
                         ? 1
                         : nodes[i][j].threshold
                     ),
-                    weights: new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
+                    weights: (typeof nodes === 'undefined'
+                        ? new Array(i < sizes.length - 1 ? sizes[i + 1] : 1)
+                        : nodes[i][j].weights.map(function (w) { return w; })
+                    )
                 };
-                if (typeof nodes !== 'undefined') {
-                    for (var k = 0; k < this.nodes[i][j].weights.length; ++k) {
-                        this.nodes[i][j].weights[k] = nodes[i][j].weights[k];
-                    }
-                }
             }
-        }
+            return layer;
+        });
     }
 
-    Net.prototype.eachNode = function Net_eachNode(f) {
-        for (var layer = 0; layer < this.nodes.length; ++layer) {
-            for (var index = 0; index < this.nodes[layer].length; ++index) {
-                f(this.nodes[layer][index], layer, index);
+    Net.prototype.eachNode = function Net_eachNode(callback) {
+        for (var layerIndex = 0; layerIndex < this.nodes.length; ++layerIndex
+        ) {
+            for (var index = 0; index < this.nodes[layerIndex].length; ++index
+            ) {
+                callback(
+                    this.nodes[layerIndex][index],
+                    layerIndex,
+                    index,
+                    this.nodes
+                );
             }
         }
     };
@@ -53,56 +56,47 @@ var Neural = (function (Neural) {
     };
 
     Net.prototype.getThresholds = function Net_getThresholds() {
-        var thresholds = new Array(this.nodes.length);
-        var that = this;
-        this.eachNode(function (n, layer, index) {
-            if (typeof thresholds[layer] === 'undefined') {
-                thresholds[layer] = new Array(that.nodes[layer].length);
-            }
-            thresholds[layer][index] = n.threshold;
+        return this.nodes.map(function (layer, layerIndex) {
+            return layer.map(function (node) {
+                return node.threshold;
+            });
         });
-        return thresholds;
     };
 
     Net.prototype.getWeights = function Net_getWeights() {
-        var weights = new Array(this.nodes.length);
-        var that = this;
-        this.eachNode(function (n, layer, index) {
-            if (typeof weights[layer] === 'undefined') {
-                weights[layer] = new Array(that.nodes[layer].length);
-            }
-            weights[layer][index] = new Array(n.weights.length);
-            for (var i = 0; i < n.weights.length; ++i) {
-                weights[layer][index][i] = n.weights[i];
-            }
+        return this.nodes.map(function (layer, layerIndex) {
+            return layer.map(function (node) {
+                return node.weights.map(function (w) {
+                    return w;
+                });
+            });
         });
-        return weights;
     };
 
     Net.prototype.setThresholds = function Net_setThresholds(thresholds) {
-        this.eachNode(function (n, layer, index) {
-            n.threshold = thresholds[layer][index];
+        this.eachNode(function (node, layerIndex, index) {
+            node.threshold = thresholds[layerIndex][index];
         });
     };
 
     Net.prototype.setWeights = function Net_setWeights(weights) {
-        this.eachNode(function (n, layer, index) {
-            for (var i = 0; i < n.weights.length; ++i) {
-                n.weights[i] = weights[layer][index][i];
-            }
+        this.eachNode(function (node, layerIndex, index) {
+            node.weights = weights[layerIndex][index].map(function (w) {
+                return w;
+            });
         });
     };
 
     Net.prototype.reset = function Net_reset() {
-        this.eachNode(function (n, layer, index) {
-            n.input = 0;
+        this.eachNode(function (node) {
+            node.input = 0;
         });
     };
 
     Net.prototype.setInputs = function Net_setInputs(inputs) {
-        for (var i = 0; i < this.nodes[0].length; ++i) {
-            this.nodes[0][i].input = inputs[i];
-        }
+        this.nodes[0].forEach(function (node, index) {
+            node.input = inputs[index];
+        });
     };
 
     Net.prototype.run = function Net_run(inputs) {
@@ -110,11 +104,11 @@ var Neural = (function (Neural) {
             this.setInputs(inputs);
         }
 
-        var that = this;
-        this.eachNode(function (n, layer, index) {
-            if (layer < that.nodes.length - 1 && n.input >= n.threshold) {
-                for (var i = 0; i < n.weights.length; ++i) {
-                    that.nodes[layer + 1][i].input += n.weights[i];
+        this.eachNode(function (node, layerIndex, index, nodes) {
+            if (layerIndex < nodes.length - 1 && node.input >= node.threshold
+            ) {
+                for (var i = 0; i < node.weights.length; ++i) {
+                    nodes[layerIndex + 1][i].input += node.weights[i];
                 }
             }
         });
@@ -123,16 +117,9 @@ var Neural = (function (Neural) {
     };
 
     Net.prototype.getOutputs = function Net_getOutputs() {
-        var layer = this.nodes.length - 1;
-        var outputs = new Array(this.nodes[layer].length);
-        for (var i = 0; i < this.nodes[layer].length; ++i) {
-            outputs[i] = (
-                this.nodes[layer][i].input >= this.nodes[layer][i].threshold
-                ? this.nodes[layer][i].weights[0]
-                : 0
-            );
-        }
-        return outputs;
+        return this.nodes[this.nodes.length - 1].map(function (node, index) {
+            return (node.input >= node.threshold ? node.weights[0] : 0);
+        });
     };
 
     Net.prototype.clone = function Net_clone() {

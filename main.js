@@ -1,26 +1,24 @@
 "use strict";
 
 var generation;
-var best = [];
+var best;
 var scores = [];
 
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
 
 $(function () {
     generation = NetTtt.Generation.newRandom();
-    var i;
-    for (i = 0; i < 10; ++i) {
-        best[i] = {score: -Infinity};
-    }
+    best = [0,1,2,3,4,5,6,7,8,9].map(function () {
+        return {score: -Infinity};
+    });
 
     var $current = $('#current');
     var $time = $('#time');
     var $pauseButton = $('#pause');
     var $graph = $('#graph');
-    var $leaders = [];
-    for (i = 0; i < 10; ++i) {
-        $leaders[i] = $('#leader-' + i);
-    }
+    var $leaders = best.map(function (b, i) {
+        return $('#leader-' + i);
+    });
     var $topExport = $('#top-export');
 
     var graphCtx = $graph[0].getContext('2d');
@@ -82,30 +80,27 @@ $(function () {
     }
 
     function score() {
-        var anyChanged = false;
         var genIndex = 0;
-        var i;
-        for (i = 0; i < 10; ++i) {
+        var count = best.length;
+        for (var i = 0; i < count; ++i) {
             if (best[i].score < generation.members[genIndex].score) {
                 best.splice(i, 0, generation.members[genIndex++]);
                 best[i].generation = generation.id;
-                anyChanged = true;
             }
         }
-
-        if (anyChanged) {
-            best = best.slice(0, 10);
+        if (best.length != count) {
+            best = best.slice(0, count);
             bestChanged();
         }
 
         var sumTopTen = 0;
         var sum = 0;
-        for (i = 0; i < generation.members.length; ++i) {
+        generation.members.forEach(function (m, i) {
             if (i < 10) {
-                sumTopTen += generation.members[i].score;
+                sumTopTen += m.score;
             }
-            sum += generation.members[i].score;
-        }
+            sum += m.score;
+        });
 
         var score = {
             top: generation.members[0].score,
@@ -124,13 +119,13 @@ $(function () {
     }
 
     function bestChanged() {
-        for (var i = 0; i < 10; ++i) {
-            $leaders[i].text(
+        $leaders.forEach(function (l, i) {
+            l.text(
                 $leaders[0].data('template')
                 .replace('{score}', best[i].score.toString())
                 .replace('{generation}', best[i].generation.toString())
             );
-        }
+        });
 
         $topExport.text(JSON.stringify(best[0].individual.export()));
     }
@@ -147,10 +142,10 @@ $(function () {
             ctx.beginPath();
             ctx.moveTo(0, height);
             var x = 0;
-            for (var i = 0; i < scores.length; ++i) {
+            scores.forEach(function (score) {
                 x += xStep;
-                ctx.lineTo(x, height - (scores[i][which.p] - lowestScore) * yScale);
-            }
+                ctx.lineTo(x, height - (score[which.p] - lowestScore) * yScale);
+            });
             ctx.stroke();
         });
 
@@ -172,7 +167,6 @@ $(function () {
     });
 
     // TODO: look into why the score is so level.  Maybe keep <= instead of <?
+    // Also maybe randomize with smaller values (10/100, not 100/1000)?
     // TODO: export selector to choose among the top 10.
-
-    // TODO: use parallel.js to do work in the background.
 });

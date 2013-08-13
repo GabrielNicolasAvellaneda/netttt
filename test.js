@@ -90,7 +90,9 @@ module("Neural");
 test("xor", function () {
     var n = new Neural.Net([2, 3, 1]);
     deepEqual(n.getSizes(), [2, 3, 1], "correct sizes");
-    n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
+    var weights = [[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]];
+    n.setWeights(weights);
+    deepEqual(n.getWeights(), weights, "correct weights");
     deepEqual(n.run([0, 0]), [0], "0⊕0 = 0");
     n.reset();
     deepEqual(n.run([0, 1]), [1], "0⊕1 = 1");
@@ -102,7 +104,8 @@ test("xor", function () {
 
 test("cloned/exported/imported xor", function () {
     var n = new Neural.Net([2, 3, 1]);
-    n.setWeights([[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]]);
+    var weights = [[[1, 0.5, 0], [0, 0.5, 1]], [[1], [-2], [1]], [[1]]];
+    n.setWeights(weights);
     var n2 = n.clone();
     n.setWeights([[[0, 0, 0], [0, 0, 0]], [[0], [0], [0]], [[0]]]);
     var exp = n2.export();
@@ -110,6 +113,7 @@ test("cloned/exported/imported xor", function () {
     var exportJson = JSON.stringify(exp);
     var n3 = Neural.Net.import(JSON.parse(exportJson));
     deepEqual(n3.getSizes(), [2, 3, 1], "correct sizes");
+    deepEqual(n3.getWeights(), weights, "correct weights");
     deepEqual(n3.run([0, 0]), [0], "0⊕0 = 0");
     n3.reset();
     deepEqual(n3.run([0, 1]), [1], "0⊕1 = 1");
@@ -122,8 +126,12 @@ test("cloned/exported/imported xor", function () {
 test("nand", function () {
     var n = new Neural.Net([2, 1]);
     deepEqual(n.getSizes(), [2, 1], "correct sizes");
-    n.setWeights([[[-1], [-1]], [[1]]]);
-    n.setThresholds([[1, 1], [-1]]);
+    var weights = [[[-1], [-1]], [[1]]];
+    var thresholds = [[1, 1], [-1]];
+    n.setWeights(weights);
+    n.setThresholds(thresholds);
+    deepEqual(n.getWeights(), weights, "correct weights");
+    deepEqual(n.getThresholds(), thresholds, "correct thresholds");
     deepEqual(n.run([0, 0]), [1], "0↑0 = 1");
     n.reset();
     deepEqual(n.run([0, 1]), [1], "0↑1 = 1");

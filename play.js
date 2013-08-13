@@ -107,8 +107,12 @@ $(function () {
 
         if (ais[game.turn] && game.winner() === 0) {
             var square = ais[game.turn].getMove(game);
-            if (game.getPiece(square) !== 0)
-                throw new Error("AI chose invalid move " + square + " in " + game.toString());
+            if (game.getPiece(square) !== 0) {
+                throw new Error(
+                    "AI chose invalid move " + square.toString()
+                    + " in " + game.toString()
+                );
+            }
             move(square);
         }
     }
