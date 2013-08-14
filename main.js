@@ -62,7 +62,6 @@ $(function () {
         beginTime = window.performance.now();
 
         workers.forEach(function (w, i) {
-            // TODO: debug this a little, to make sure it's passing the correct ones.
             w.postMessage(exportGeneration(i));
         });
     }
