@@ -3,14 +3,26 @@
 var generation;
 var best;
 var scores = [];
+var workerCount = 4;
+var workers = [];
 
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
+
+// TODO: see if I can use importScripts from inside the Workers, to avoid having to bundle anything
 
 $(function () {
     generation = NetTtt.Generation.newRandom();
     best = [0,1,2,3,4,5,6,7,8,9].map(function () {
         return {score: -Infinity};
     });
+    for (var i = 0; i < workerCount; ++i) {
+        workers[i] = new Worker('main.worker.bundle.js');
+
+        workers[i].onmessage = function (event) {
+            process(event.data);
+        };
+        // TODO: onerror?
+    }
 
     var $current = $('#current');
     var $time = $('#time');
@@ -23,27 +35,14 @@ $(function () {
 
     var graphCtx = $graph[0].getContext('2d');
     var paused = false;
+    var receivedCount = 0;
+    var beginTime = 0;
+    var endTime = 0;
     var avgTime = 0;
     var lowestScore = Infinity;
     var highestScore = -Infinity;
-    var runTimerId = undefined;
 
-    scheduleRun();
-
-    function scheduleRun() {
-        if (typeof runTimerId === 'undefined' && !paused) {
-            runTimerId = window.setInterval(run, 100);
-        }
-
-        update();
-    }
-
-    function cancelRun() {
-        if (typeof runTimerId !== 'undefined') {
-            window.clearInterval(runTimerId);
-            runTimerId = undefined;
-        }
-    }
+    run();
 
     function update() {
         $current.text($current.data(paused ? 'paused' : 'unpaused')
@@ -55,28 +54,65 @@ $(function () {
         $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
     }
 
-    function time(f) {
-        var t1 = window.performance.now();
-        f();
-        var t2 = window.performance.now();
-        return t2 - t1;
+    function run() {
+        update();
+
+        if (paused) {
+            return;
+        }
+
+        receivedCount = 0;
+        beginTime = window.performance.now();
+
+        workers.forEach(function (w, i) {
+            // TODO: debug this a little, to make sure it's passing the correct ones.
+            w.postMessage(exportGeneration(i));
+        });
     }
 
-    function run() {
-        cancelRun();
+    function exportGeneration(chunk) {
+        var size = generation.members.length / workers.length;
+        return {
+            generation: generation.id,
+            individuals: generation.members.slice(
+                Math.round(chunk * size), Math.round((chunk + 1) * size)
+            ).map(function (m) { return m.individual.export(); })
+        };
+    }
 
-        var ms = time(function () {
-            generation.run();
-            generation.order();
+    function process(data) {
+        if (data.generation !== generation.id) {
+            throw new Error("Worker shenanigans");
+        }
+
+        data.scores.forEach(function (s) {
+            generation.members[s.id].score = s.score;
         });
-        avgTime = (ms + avgTime * generation.id) / (generation.id + 1);
+
+        if (++receivedCount === workers.length) {
+            finishRun();
+        }
+    }
+
+    function finishRun() {
+        generation.members.forEach(function (m) {
+            if (m.score === -Infinity) {
+                throw new Error("Received incomplete result");
+            }
+        });
+
+        generation.order();
+
+        endTime = window.performance.now();
+        var duration = endTime - beginTime;
+        avgTime = (duration + avgTime * generation.id) / (generation.id + 1);
 
         score();
         drawGraph(graphCtx, $graph.width(), $graph.height());
 
         generation = generation.next();
 
-        scheduleRun();
+        run();
     }
 
     function score() {
@@ -120,8 +156,7 @@ $(function () {
 
     function bestChanged() {
         $leaders.forEach(function (l, i) {
-            l.text(
-                $leaders[0].data('template')
+            l.text($leaders[0].data('template')
                 .replace('{score}', best[i].score.toString())
                 .replace('{generation}', best[i].generation.toString())
             );
@@ -157,8 +192,7 @@ $(function () {
     function setPaused(p) {
         if (p !== paused) {
             paused = p;
-            cancelRun();
-            scheduleRun();
+            run();
         }
     }
 

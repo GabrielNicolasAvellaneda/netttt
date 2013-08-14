@@ -197,6 +197,8 @@ var NetTtt = (function (NetTtt) {
         this.id = id || 0;
         this.members = individuals.map(function (i) {
             return {
+                // Allow the individual to specify its own id so our workers
+                // don't munge the id from the main thread.
                 individual: i,
                 score: -Infinity
             };
@@ -268,7 +270,7 @@ var NetTtt = (function (NetTtt) {
         var i;
         for (i = 0; i < imported.length; ++i) {
             individuals[i] = imported[i];
-            // Assume imported individuals have the correct id.
+            individuals[i].id = i;
         }
         for (; i < size; ++i) {
             individuals[i] = Individual.newRandom(i);
