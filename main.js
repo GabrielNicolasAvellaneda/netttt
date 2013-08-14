@@ -8,20 +8,17 @@ var workers = [];
 
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
 
-// TODO: see if I can use importScripts from inside the Workers, to avoid having to bundle anything
-
 $(function () {
     generation = NetTtt.Generation.newRandom();
     best = [0,1,2,3,4,5,6,7,8,9].map(function () {
         return {score: -Infinity};
     });
     for (var i = 0; i < workerCount; ++i) {
-        workers[i] = new Worker('main.worker.bundle.js');
+        workers[i] = new Worker('main.worker.js');
 
         workers[i].onmessage = function (event) {
             process(event.data);
         };
-        // TODO: onerror?
     }
 
     var $current = $('#current');

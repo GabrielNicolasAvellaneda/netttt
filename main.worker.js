@@ -1,6 +1,8 @@
 (function (global) {
     "use strict";
 
+    importScripts('src/ttt.js', 'src/neural.js', 'src/ai.js', 'src/netttt.js');
+
     global.onmessage = function (event) {
         var result = process(event.data);
         postMessage(result);
