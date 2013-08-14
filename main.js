@@ -36,8 +36,6 @@ $(function () {
     var beginTime = 0;
     var endTime = 0;
     var avgTime = 0;
-    var lowestScore = Infinity;
-    var highestScore = -Infinity;
 
     run();
 
@@ -134,20 +132,11 @@ $(function () {
             sum += m.score;
         });
 
-        var score = {
+        scores.push({
             top: generation.members[0].score,
             topTen: sumTopTen / 10,
             avg: sum / generation.members.length
-        };
-        ['top', 'topTen', 'avg'].forEach(function (s) {
-            if (score[s] < lowestScore) {
-                lowestScore = score[s];
-            }
-            if (score[s] > highestScore) {
-                highestScore = score[s];
-            }
         });
-        scores.push(score);
     }
 
     function bestChanged() {
@@ -162,8 +151,11 @@ $(function () {
     }
 
     function drawGraph(ctx, width, height) {
-        var yScale = height / (highestScore - lowestScore);
-        var xStep = width / scores.length;
+        var top = NetTtt.Individual.PERFECT_SCORE + 1;
+        var bottom = -20;
+        var length = Math.min(scores.length, 200);
+        var yScale = height / (top - bottom);
+        var xStep = width / length;
 
         ctx.save();
 
@@ -171,12 +163,15 @@ $(function () {
         [{s: '#44f', p: 'avg'}, {s: '#4f4', p: 'topTen'}, {s: '#f44', p: 'top'}].forEach(function (which) {
             ctx.strokeStyle = which.s;
             ctx.beginPath();
-            ctx.moveTo(0, height);
+
+            var start = Math.max(scores.length - length, 0);
+            ctx.moveTo(0, height - (start === 0 ? 0 : (scores[start - 1][which.p] - bottom) * yScale));
             var x = 0;
-            scores.forEach(function (score) {
+            for (var i = start; i < scores.length; ++i) {
                 x += xStep;
-                ctx.lineTo(x, height - (score[which.p] - lowestScore) * yScale);
-            });
+                ctx.lineTo(x, height - (scores[i][which.p] - bottom) * yScale);
+            }
+
             ctx.stroke();
         });
 
