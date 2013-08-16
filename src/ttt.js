@@ -51,23 +51,27 @@ var Ttt = (function (Ttt) {
         return (board | (piece << (square << 1)));
     }
 
-    function winner(board) {
-        if ((board & 0000077) === 0000025) return X;
-        if ((board & 0000077) === 0000077) return O;
-        if ((board & 0007700) === 0002500) return X;
-        if ((board & 0007700) === 0007700) return O;
-        if ((board & 0770000) === 0250000) return X;
-        if ((board & 0770000) === 0770000) return O;
-        if ((board & 0030303) === 0010101) return X;
-        if ((board & 0030303) === 0030303) return O;
-        if ((board & 0141414) === 0040404) return X;
-        if ((board & 0141414) === 0141414) return O;
-        if ((board & 0606060) === 0202020) return X;
-        if ((board & 0606060) === 0606060) return O;
-        if ((board & 0601403) === 0200401) return X;
-        if ((board & 0601403) === 0601403) return O;
-        if ((board & 0031460) === 0010420) return X;
-        if ((board & 0031460) === 0031460) return O;
+    function winner(board, extra) {
+        // extra gets its line property set if a player has won.  It's used to
+        // draw an appropriate line indicating the win.
+        extra = extra || {};
+
+        if ((board & 0000077) === 0000025) { extra.line = 0; return X; }
+        if ((board & 0000077) === 0000077) { extra.line = 0; return O; }
+        if ((board & 0007700) === 0002500) { extra.line = 1; return X; }
+        if ((board & 0007700) === 0007700) { extra.line = 1; return O; }
+        if ((board & 0770000) === 0250000) { extra.line = 2; return X; }
+        if ((board & 0770000) === 0770000) { extra.line = 2; return O; }
+        if ((board & 0030303) === 0010101) { extra.line = 3; return X; }
+        if ((board & 0030303) === 0030303) { extra.line = 3; return O; }
+        if ((board & 0141414) === 0040404) { extra.line = 4; return X; }
+        if ((board & 0141414) === 0141414) { extra.line = 4; return O; }
+        if ((board & 0606060) === 0202020) { extra.line = 5; return X; }
+        if ((board & 0606060) === 0606060) { extra.line = 5; return O; }
+        if ((board & 0601403) === 0200401) { extra.line = 6; return X; }
+        if ((board & 0601403) === 0601403) { extra.line = 6; return O; }
+        if ((board & 0031460) === 0010420) { extra.line = 7; return X; }
+        if ((board & 0031460) === 0031460) { extra.line = 7; return O; }
         if ((board & 0252525) === 0252525) return TIE;
         return 0;
     }
@@ -132,6 +136,29 @@ var Ttt = (function (Ttt) {
         ctx.stroke();
     }
 
+    function drawWinnerLine(ctx, line) {
+        ctx.beginPath();
+        if (line >= 0 && line <= 2) {
+            var y = 0.1665 + 0.333 * line;
+            ctx.moveTo(0.05, y);
+            ctx.lineTo(0.95, y);
+        }
+        else if (line >= 3 && line <= 5) {
+            var x = 0.1665 + 0.333 * (line - 3);
+            ctx.moveTo(x, 0.05);
+            ctx.lineTo(x, 0.95);
+        }
+        else if (line === 6) {
+            ctx.moveTo(0.05, 0.05);
+            ctx.lineTo(0.95, 0.95);
+        }
+        else if (line === 7) {
+            ctx.moveTo(0.05, 0.95);
+            ctx.lineTo(0.95, 0.05);
+        }
+        ctx.stroke();
+    }
+
     Game.prototype.draw = function Game_draw(
         ctx, w, h, x, y, highlightSquare
     ) {
@@ -172,6 +199,17 @@ var Ttt = (function (Ttt) {
                 break;
             }
 
+            ctx.restore();
+        }
+
+        var extra = {};
+        var w = winner(this.board, extra);
+        if (w && w !== TIE) {
+            ctx.save();
+            ctx.lineWidth = 0.02;
+            ctx.strokeStyle = (w === X ? '#e44' : '#44e');
+
+            drawWinnerLine(ctx, extra.line);
             ctx.restore();
         }
 
