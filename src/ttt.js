@@ -137,7 +137,7 @@ var Ttt = (function (Ttt) {
     ) {
         ctx.save();
         ctx.translate(x || 0, y || 0);
-        ctx.scale(w, h);
+        ctx.scale(w || ctx.canvas.width, h || ctx.canvas.height);
 
         ctx.lineWidth = 0.05;
         ctx.lineCap = 'round';

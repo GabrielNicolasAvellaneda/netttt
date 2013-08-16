@@ -26,7 +26,7 @@ $(function () {
     var $pauseButton = $('#pause');
     var $graph = $('#graph');
     var $leaders = best.map(function (b, i) {
-        return $('#leader-' + i);
+        return $('#leader-' + i.toString());
     });
     var $topExport = $('#top-export');
 
@@ -36,6 +36,33 @@ $(function () {
     var beginTime = 0;
     var endTime = 0;
     var avgTime = 0;
+    var demos = [
+        {
+            ctx: $('#x-random-demo-board')[0].getContext('2d'),
+            player: Ttt.X,
+            opponent: new Ai.Random(),
+            game: null
+        },
+        {
+            ctx: $('#x-smart-demo-board')[0].getContext('2d'),
+            player: Ttt.X,
+            opponent: new Ai.Smart(),
+            game: null
+        },
+        {
+            ctx: $('#o-random-demo-board')[0].getContext('2d'),
+            player: Ttt.O,
+            opponent: new Ai.Random(),
+            game: null
+        },
+        {
+            ctx: $('#o-smart-demo-board')[0].getContext('2d'),
+            player: Ttt.O,
+            opponent: new Ai.Smart(),
+            game: null
+        }
+    ];
+    var demoTimerId = undefined;
 
     run();
 
@@ -47,6 +74,10 @@ $(function () {
             $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
         }
         $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
+
+        if (typeof best[0].individual === 'undefined') {
+            drawDemos();
+        }
     }
 
     function run() {
@@ -109,18 +140,30 @@ $(function () {
         run();
     }
 
+    function setPaused(p) {
+        if (p !== paused) {
+            paused = p;
+            run();
+        }
+    }
+
     function score() {
+        var topChanged = false;
         var genIndex = 0;
         var count = best.length;
         for (var i = 0; i < count; ++i) {
             if (best[i].score < generation.members[genIndex].score) {
                 best.splice(i, 0, generation.members[genIndex++]);
                 best[i].generation = generation.id;
+
+                if (i === 0) {
+                    topChanged = true;
+                }
             }
         }
         if (best.length != count) {
             best = best.slice(0, count);
-            bestChanged();
+            bestChanged(topChanged);
         }
 
         var sumTopTen = 0;
@@ -139,7 +182,7 @@ $(function () {
         });
     }
 
-    function bestChanged() {
+    function bestChanged(topChanged) {
         $leaders.forEach(function (l, i) {
             l.text($leaders[0].data('template')
                 .replace('{score}', best[i].score.toString())
@@ -147,7 +190,11 @@ $(function () {
             );
         });
 
-        $topExport.text(JSON.stringify(best[0].individual.export()));
+        if (topChanged) {
+            $topExport.text(JSON.stringify(best[0].individual.export()));
+
+            resetDemos();
+        }
     }
 
     function drawGraph(ctx, width, height) {
@@ -180,11 +227,39 @@ $(function () {
         ctx.restore();
     }
 
-    function setPaused(p) {
-        if (p !== paused) {
-            paused = p;
-            run();
+    function resetDemos() {
+        demos.forEach(function (d) {
+            d.game = new Ttt.Game();
+        });
+
+        if (typeof demoTimerId !== 'undefined') {
+            window.clearInterval(demoTimerId);
         }
+        demoTimerId = window.setInterval(updateDemos, 1000);
+        updateDemos();
+    }
+
+    function updateDemos() {
+        demos.forEach(function (d) {
+            if (d.game.winner()) {
+                d.game = new Ttt.Game();
+                return;
+            }
+
+            var ai = (d.game.turn === d.player
+                ? new Ai.Neural(best[0].individual.net)
+                : d.opponent
+            );
+            d.game.move(ai.getMove(d.game));
+        });
+        drawDemos();
+    }
+
+    function drawDemos() {
+        demos.forEach(function (d) {
+            (d.game ? d.game : new Ttt.Game()).draw(d.ctx);
+        });
+
     }
 
     $pauseButton.click(function (event) {
