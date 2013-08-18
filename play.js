@@ -126,6 +126,7 @@ $(function () {
         var ai = null;
         switch ((turn === Ttt.X ? $xControl : $oControl).val()) {
         case 'ai-random': ai = new Ai.Random(); break;
+        case 'ai-easy': ai = new Ai.Smart(1); break;
         case 'ai-smart': ai = new Ai.Smart(); break;
         case 'ai-neural':
             var importBox = (turn === Ttt.X ? $xAiNeuralImport : $oAiNeuralImport);
