@@ -152,7 +152,7 @@ $(function () {
         var genIndex = 0;
         var count = best.length;
         for (var i = 0; i < count; ++i) {
-            if (best[i].score < generation.members[genIndex].score) {
+            if (best[i].score <= generation.members[genIndex].score) {
                 best.splice(i, 0, generation.members[genIndex++]);
                 best[i].generation = generation.id;
 
@@ -199,7 +199,7 @@ $(function () {
 
     function drawGraph(ctx, width, height) {
         var top = NetTtt.Individual.PERFECT_SCORE + 1;
-        var bottom = -20;
+        var bottom = NetTtt.Individual.MINIMUM_SCORE - 1;
         var length = Math.min(scores.length, 200);
         var yScale = height / (top - bottom);
         var xStep = width / length;
@@ -228,15 +228,15 @@ $(function () {
     }
 
     function resetDemos() {
-        demos.forEach(function (d) {
-            d.game = new Ttt.Game();
-        });
-
         if (typeof demoTimerId !== 'undefined') {
             window.clearInterval(demoTimerId);
         }
         demoTimerId = window.setInterval(updateDemos, 1000);
-        updateDemos();
+
+        demos.forEach(function (d) {
+            d.game = new Ttt.Game();
+        });
+        drawDemos();
     }
 
     function updateDemos() {
@@ -266,7 +266,5 @@ $(function () {
         setPaused(!paused);
     });
 
-    // TODO: look into why the score is so level.  Maybe keep <= instead of <?
-    // Also maybe randomize with smaller values (10/100, not 100/1000)?
     // TODO: export selector to choose among the top 10.
 });

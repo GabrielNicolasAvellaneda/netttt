@@ -1,24 +1,26 @@
 var NetTtt = (function (NetTtt) {
     "use strict";
 
+    var EASY_MATCHES = 10;
+
+    // TODO: finish the part after the easy matches.
     function Individual(id, net, score) {
         this.id = id;
         this.net = net;
         this.score = score || {
-            maxAge: 0,
-            wins: 0,
-            losses: 0
+            easyWin: false,
+            easyOpponentMoves: 0,
         }
     }
 
-    // We play three games as both X and O against both the random and smart
-    // AIs.  This counts for all 6 wins against the random AI, and no losses
-    // against the random AI (and of course no losses implies lasting all 9
-    // turns).  See getScore() for how that adds up to 69.
-    Individual.PERFECT_SCORE = 69;
+    Individual.MINIMUM_SCORE = 3 * EASY_MATCHES;
+    Individual.PERFECT_SCORE = 4 * EASY_MATCHES + 10;
 
     Individual.prototype.getScore = function Individual_getScore() {
-        return (this.score.wins - this.score.losses) * 10 + this.score.maxAge;
+        return (this.score.easyWin
+            ? Individual.PERFECT_SCORE
+            : this.score.easyOpponentMoves
+        );
     };
 
     function play(x, o) {
@@ -48,43 +50,26 @@ var NetTtt = (function (NetTtt) {
         };
     }
 
-    Individual.prototype.doScore = function Individual_doScore(
-        result, myTurn, vsSmart
-    ) {
-        if (vsSmart && result.turns > this.score.maxAge) {
-            this.score.maxAge = result.turns;
-        }
+    Individual.prototype.matchEasy = function Individual_matchEasy() {
+        var x = new Ai.Neural(this.net);
+        var o = new Ai.Smart(1);
 
-        if (result.winner === myTurn) {
-            if (vsSmart) {
-                throw new Error("Smart AI should never lose");
-            }
-            this.score.wins++;
-        }
-        else if (result.winner !== Ttt.TIE) {
-            this.score.losses++;
-        }
-    };
+        var result = play(x, o);
 
-    Individual.prototype.match = function Individual_match(opponent, myTurn) {
-        var ai = new Ai.Neural(this.net);
-        var x = (myTurn === Ttt.X ? ai : opponent);
-        var o = (myTurn === Ttt.X ? opponent : ai);
-
-        this.doScore(play(x, o), myTurn, opponent instanceof Ai.Smart);
+        if (result.winner === Ttt.X) {
+            this.score.easyWin = true;
+            return false;
+        }
+        this.score.easyOpponentMoves += Math.floor(result.turns / 2);
+        return true;
     };
 
     Individual.prototype.tourney = function Individual_tourney() {
-        // TODO: don't play against random till it's already good.  Instead,
-        // play vs. a "dumb" Smart (depth 0 -- which may mean adding some code
-        // to Net to not invoke negamax at all, just order by current
-        // evaluation) and then the real Smart.  Or something.
-        [new Ai.Random(), new Ai.Smart()].forEach(function (opponent) {
-            for (var i = 0; i < 3; ++i) {
-                this.match(opponent, Ttt.X);
-                this.match(opponent, Ttt.O);
+        for (var i = 0; i < 10; ++i) {
+            if (!this.matchEasy()) {
+                break;
             }
-        }, this);
+        }
         return this.getScore();
     };
 
@@ -101,8 +86,9 @@ var NetTtt = (function (NetTtt) {
     }
 
     function randomizeValue(v, modifyChance, minPerturb, maxPerturb) {
-        if (Math.random() < modifyChance)
+        if (Math.random() < modifyChance) {
             v += realRand(minPerturb, maxPerturb);
+        }
         return v;
     }
 
@@ -110,13 +96,13 @@ var NetTtt = (function (NetTtt) {
         net, modifyChance, minThresh, maxThresh, minWeight, maxWeight
     ) {
         modifyChance = (typeof modifyChance === 'undefined'
-            ? 0.001
+            ? 0.05
             : modifyChance
         );
-        minThresh = minThresh || -1000;
-        maxThresh = maxThresh || 1000;
-        minWeight = minWeight || -100;
-        maxWeight = maxWeight || 100;
+        minThresh = minThresh || -100;
+        maxThresh = maxThresh || 100;
+        minWeight = minWeight || -10;
+        maxWeight = maxWeight || 10;
 
         net.eachNode(function (node) {
             node.threshold = randomizeValue(
