@@ -1,27 +1,18 @@
 var NetTtt = (function (NetTtt) {
     "use strict";
 
-    var EASY_MATCHES = 10;
+    var MATCHES_PER_PLAYER = 50;
+    var WIN_SCORE = 1;
+    var LOSS_SCORE = -10;
 
-    // TODO: finish the part after the easy matches.
     function Individual(id, net, score) {
         this.id = id;
         this.net = net;
-        this.score = score || {
-            easyWin: false,
-            easyOpponentMoves: 0,
-        }
+        this.score = 0;
     }
 
-    Individual.MINIMUM_SCORE = 3 * EASY_MATCHES;
-    Individual.PERFECT_SCORE = 4 * EASY_MATCHES + 10;
-
-    Individual.prototype.getScore = function Individual_getScore() {
-        return (this.score.easyWin
-            ? Individual.PERFECT_SCORE
-            : this.score.easyOpponentMoves
-        );
-    };
+    Individual.MINIMUM_SCORE = MATCHES_PER_PLAYER * 2 * LOSS_SCORE;
+    Individual.PERFECT_SCORE = MATCHES_PER_PLAYER * 2 * WIN_SCORE;
 
     function play(x, o) {
         var players = {};
@@ -30,7 +21,6 @@ var NetTtt = (function (NetTtt) {
 
         var game = new Ttt.Game();
         var winner;
-        var turns = 0;
         do {
             var move = players[game.turn].getMove(game);
             if (move < 0 || move >= 9 || game.getPiece(move) !== 0) {
@@ -41,36 +31,34 @@ var NetTtt = (function (NetTtt) {
             }
 
             game.move(move);
-            ++turns;
         } while (!(winner = game.winner()));
 
-        return {
-            winner: winner,
-            turns: turns
-        };
+        return winner;
     }
 
-    Individual.prototype.matchEasy = function Individual_matchEasy() {
-        var x = new Ai.Neural(this.net);
-        var o = new Ai.Smart(1);
+    Individual.prototype.match = function Individual_match(turn) {
+        var me = new Ai.Neural(this.net);
+        var opponent = new Ai.Random();
+        var x = (turn === Ttt.X ? me : opponent);
+        var o = (turn === Ttt.X ? opponent : me);
 
-        var result = play(x, o);
+        var winner = play(x, o);
 
-        if (result.winner === Ttt.X) {
-            this.score.easyWin = true;
-            return false;
+        if (winner === turn) {
+            this.score += WIN_SCORE;
         }
-        this.score.easyOpponentMoves += Math.floor(result.turns / 2);
-        return true;
+        else if (winner !== Ttt.TIE) {
+            this.score += LOSS_SCORE;
+        }
     };
 
     Individual.prototype.tourney = function Individual_tourney() {
-        for (var i = 0; i < 10; ++i) {
-            if (!this.matchEasy()) {
-                break;
+        [Ttt.X, Ttt.O].forEach(function (turn) {
+            for (var i = 0; i < MATCHES_PER_PLAYER; ++i) {
+                this.match(turn);
             }
-        }
-        return this.getScore();
+        }, this);
+        return this.score;
     };
 
     Individual.prototype.clone = function Individual_clone(id) {
@@ -128,12 +116,12 @@ var NetTtt = (function (NetTtt) {
         minNodes = minNodes || 3;
         maxNodes = maxNodes || 36;
 
-        var sizes = [9];
+        var sizes = [18];
         var internalLayers = intRand(minLayers, maxLayers);
         for (var i = 0; i < internalLayers; ++i) {
             sizes.push(intRand(minNodes, maxNodes));
         }
-        sizes.push(9);
+        sizes.push(1);
         return sizes;
     }
 
@@ -167,12 +155,12 @@ var NetTtt = (function (NetTtt) {
         var id = obj.id;
         var net = Neural.Net.import(obj.net);
         var sizes = net.getSizes();
-        if (sizes.length < 1 || sizes[0] !== 9
-            || sizes[sizes.length - 1] !== 9
+        if (sizes.length < 1 || sizes[0] !== 18
+            || sizes[sizes.length - 1] !== 1
         ) {
             throw new Error(
                 "NetTtt.Individual.import() needs a Neural.Net.import() "
-                + "object with input and output layer sizes of 9 nodes"
+                + "object with 18 input layer nodes and 1 output layer node"
             );
         }
 

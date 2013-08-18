@@ -202,21 +202,28 @@ var Ai = (function (Ai) {
         this.net = net;
     }
 
-    function getInputs(game) {
-        var inputs = new Array(9);
+    function getInputs(board, turn) {
+        var inputs = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         for (var i = 0; i < 9; ++i) {
-            var piece = game.getPiece(i);
-            inputs[i] = (piece === 0 ? 0 : (piece === game.turn ? 1 : -1));
+            var piece = Ttt.getPiece(board, i);
+            if (piece === turn) {
+                inputs[i * 2] = 1;
+            }
+            else if (piece) {
+                inputs[i * 2 + 1] = 1;
+            }
         }
         return inputs;
     }
 
     Neural.prototype.getMove = function Neural_getMove(game) {
-        this.net.reset();
-        var outputs = this.net.run(getInputs(game));
-
+        var that = this;
         return arrayRand(topScoring(game.validMoves(), function (move) {
-            return outputs[move];
+            var board = Ttt.move(game.board, move, game.turn);
+
+            that.net.reset();
+            var outputs = that.net.run(getInputs(board, game.turn));
+            return outputs[0];
         }).moves);
     };
 

@@ -6,6 +6,7 @@ var scores = [];
 var workerCount = 4;
 var workers = [];
 
+// TODO: allow worker count to be updated on the fly.
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
 
 $(function () {
