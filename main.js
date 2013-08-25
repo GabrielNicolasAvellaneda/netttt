@@ -216,7 +216,7 @@ $(function () {
     function bestChanged(topChanged) {
         $leaders.forEach(function (l, i) {
             l.text($leaders[0].data('template')
-                .replace('{score}', best[i].score.toString())
+                .replace('{score}', best[i].score.toFixed(1))
                 .replace('{generation}', best[i].generation.toString())
             );
         });
