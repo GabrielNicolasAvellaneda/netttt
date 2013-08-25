@@ -8,11 +8,8 @@
       body {
         font-family: sans-serif;
       }
-      #current {
-        font-size: x-large;
-      }
-      .header {
-        font-weight: bold;
+      h2, h4 {
+        margin: 0;
       }
       .control {
         margin: 1ex;
@@ -34,10 +31,10 @@
   </head>
   <body>
     <div id="status">
-      <div id="current" class="header"
+      <h2 id="current"
           data-unpaused="Running generation {generation}..."
           data-paused="Paused at generation {generation}"
-      >&nbsp;</div>
+      >&nbsp;</h2>
       <div id="time"
           data-template="Avg. time: {time}ms"
       >&nbsp;</div>
@@ -66,9 +63,9 @@
     <div id="stats">
       <canvas id="graph" width="500" height="250"></canvas>
       <div id="leaderboard">
-        <div class="header">
+        <h4>
           Top ten nets:
-        </div>
+        </h4>
         <ol id="leaders">
           <li id="leader-0"
               data-template="Score: {score} from generation: {generation}"
@@ -88,7 +85,7 @@
     <div class="clear"></div>
 
     <div id="demos">
-      <div class="header">Top net playing as:</div>
+      <h4>Top net playing as:</h4>
       <div class="demo-container">
         <div class="demo-header">X vs. random</div>
         <canvas id="x-random-demo-board" width="150" height="150"></canvas>
@@ -109,7 +106,7 @@
     <div class="clear"></div>
 
     <div id="export">
-      <div class="header">Top net source:</div>
+      <h4>Top net source:</h4>
       <!-- TODO: export selector to choose among the top 10 -->
       <div id="export-sizes" data-template="Internal layer sizes: {sizes}"
       >&nbsp;</div>
