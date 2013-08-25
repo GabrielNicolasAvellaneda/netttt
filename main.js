@@ -169,7 +169,7 @@ $(function () {
         score();
         drawGraph(graphCtx, $graph.width(), $graph.height());
 
-        generation = generation.next();
+        generation = generation.next(mutationRate, clonesPerGeneration);
 
         run();
     }
@@ -306,8 +306,8 @@ $(function () {
         setPaused(!paused);
     });
 
-    function intInputChanged($item, min, max, _default) {
-        var x = parseInt($item.val(), 10);
+    function inputChanged($item, parse, min, max, _default) {
+        var x = parse($item.val());
         if (isNaN(x)) {
             x = _default;
         }
@@ -321,11 +321,23 @@ $(function () {
         return x;
     }
 
+    function parseInt10(s) {
+        return parseInt(s, 10);
+    }
+
     $workers.change(function (event) {
-        workerCount = intInputChanged($workers, 1, 16, 4);
+        workerCount = inputChanged($workers, parseInt10, 1, 16, 4);
     });
 
     $matches.change(function (event) {
-        matchesPerTourney = intInputChanged($matches, 10, 9999, 600);
+        matchesPerTourney = inputChanged($matches, parseInt10, 10, 9999, 600);
+    });
+
+    $mutation.change(function (event) {
+        mutationRate = inputChanged($mutation, parseFloat, 0.0001, 1, 0.05);
+    });
+
+    $clones.change(function (event) {
+        clonesPerGeneration = inputChanged($clones, parseInt10, 0, 20, 5);
     });
 });

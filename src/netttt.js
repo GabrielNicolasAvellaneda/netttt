@@ -99,10 +99,7 @@ var NetTtt = (function (NetTtt) {
 
         net.eachNode(function (node) {
             node.threshold = randomizeValue(
-                node.threshold,
-                modifyChance,
-                minThresh,
-                maxThresh
+                node.threshold, modifyChance, minThresh, maxThresh
             );
             for (var i = 0; i < node.weights.length; ++i) {
                 node.weights[i] = randomizeValue(
@@ -134,12 +131,14 @@ var NetTtt = (function (NetTtt) {
         return new Individual(id, randomize(new Neural.Net(randomSizes()), 1));
     }
 
-    Individual.prototype.reproduce = function Individual_reproduce(id) {
+    Individual.prototype.reproduce = function Individual_reproduce(
+        id, mutationRate
+    ) {
         // TODO: small random chance of adding/removing a whole internal layer,
         // or a node within an internal layer (extra weights/thresholds made up
         // randomly?).
 
-        return new Individual(id, randomize(this.net.clone()));
+        return new Individual(id, randomize(this.net.clone(), mutationRate));
     };
 
     Individual.prototype.export = function Individual_export() {
@@ -204,12 +203,13 @@ var NetTtt = (function (NetTtt) {
     };
 
     Generation.prototype.next = function Generation_next(
-        id, oldIndividuals, clones, children
+        mutationRate, clones, children, id, oldIndividuals
     ) {
-        id = id || this.id + 1;
-        oldIndividuals = oldIndividuals || this.getIndividuals();
+        mutationRate = mutationRate || 0.05;
         clones = clones || 5;
         children = children || 10;
+        id = id || this.id + 1;
+        oldIndividuals = oldIndividuals || this.getIndividuals();
 
         var newIndividuals = [];
         var i;
@@ -225,9 +225,14 @@ var NetTtt = (function (NetTtt) {
         // fill up on individuals.
         var reproducer = 0;
         while (newIndividuals.length < oldIndividuals.length) {
-            for (i = 0; i < children; ++i) {
+            for (i = 0;
+                i < children && newIndividuals.length < oldIndividuals.length;
+                ++i
+            ) {
                 newIndividuals.push(
-                    oldIndividuals[reproducer].reproduce(newIndividuals.length)
+                    oldIndividuals[reproducer].reproduce(
+                        newIndividuals.length, mutationRate
+                    )
                 );
             }
             if (children > 1) {
