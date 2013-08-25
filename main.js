@@ -10,7 +10,6 @@ var mutationRate = 0.05;
 var clonesPerGeneration = 5;
 var workers = [];
 
-// TODO: allow worker count to be updated on the fly.
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
 
 $(function () {
@@ -18,13 +17,6 @@ $(function () {
     best = [0,1,2,3,4,5,6,7,8,9].map(function () {
         return {score: -Infinity};
     });
-    for (var i = 0; i < workerCount; ++i) {
-        workers[i] = new Worker('main.worker.js');
-
-        workers[i].onmessage = function (event) {
-            process(event.data);
-        };
-    }
 
     var $current = $('#current');
     var $time = $('#time');
@@ -91,12 +83,30 @@ $(function () {
             return;
         }
 
+        adjustWorkers();
+
         receivedCount = 0;
         beginTime = window.performance.now();
 
         workers.forEach(function (w, i) {
             w.postMessage(exportGeneration(i));
         });
+    }
+
+    function adjustWorkers() {
+        if (workers.length > workerCount) {
+            var excess = workers.length - workerCount;
+            workers.splice(-excess, excess);
+        }
+        else if (workers.length < workerCount) {
+            for (var i = workers.length; i < workerCount; ++i) {
+                workers[i] = new Worker('main.worker.js');
+
+                workers[i].onmessage = function (event) {
+                    process(event.data);
+                };
+            }
+        }
     }
 
     function update() {
@@ -290,4 +300,17 @@ $(function () {
         setPaused(!paused);
     });
 
+    $workers.change(function (event) {
+        workerCount = parseInt($workers.val(), 10);
+        if (isNaN(workerCount)) {
+            workerCount = 4;
+        }
+        else if (workerCount < 1) {
+            workerCount = 1;
+        }
+        else if (workerCount > 16) {
+            workerCount = 16;
+        }
+        $workers.val(workerCount);
+    });
 });
