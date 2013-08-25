@@ -3,6 +3,7 @@
 var generation;
 var best;
 var scores = [];
+var paused = false;
 var workerCount = 4;
 var workers = [];
 
@@ -33,7 +34,6 @@ $(function () {
     var $topExport = $('#top-export');
 
     var graphCtx = $graph[0].getContext('2d');
-    var paused = false;
     var receivedCount = 0;
     var beginTime = 0;
     var endTime = 0;

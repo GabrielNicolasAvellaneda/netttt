@@ -3,6 +3,7 @@
 var game;
 var ais;
 var aiDelay = 1000;
+var paused = false;
 
 $(function () {
     ais = {};
@@ -21,7 +22,6 @@ $(function () {
     var $restartButton = $('#restart');
 
     var boardCtx = $board[0].getContext('2d');
-    var paused = false;
     var aiTimerId = undefined;
 
     restart();
