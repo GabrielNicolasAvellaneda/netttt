@@ -207,6 +207,8 @@ $(function () {
 
         ctx.save();
 
+        ctx.lineWidth = 2;
+
         ctx.clearRect(0, 0, width, height);
         [{s: '#44f', p: 'avg'}, {s: '#4f4', p: 'topTen'}, {s: '#f44', p: 'top'}].forEach(function (which) {
             ctx.strokeStyle = which.s;
