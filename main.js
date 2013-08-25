@@ -5,6 +5,9 @@ var best;
 var scores = [];
 var paused = false;
 var workerCount = 4;
+var gamesPerTourney = 600;
+var mutationRate = 0.05;
+var clonesPerGeneration = 5;
 var workers = [];
 
 // TODO: allow worker count to be updated on the fly.
@@ -26,6 +29,10 @@ $(function () {
     var $current = $('#current');
     var $time = $('#time');
     var $pauseButton = $('#pause');
+    var $workers = $('#workers');
+    var $games = $('#games');
+    var $mutation = $('#mutation');
+    var $clones = $('#clones');
     var $graph = $('#graph');
     var $leaders = best.map(function (b, i) {
         return $('#leader-' + i.toString());
@@ -66,20 +73,15 @@ $(function () {
     ];
     var demoTimerId = undefined;
 
-    run();
+    firstRun();
 
-    function update() {
-        $current.text($current.data(paused ? 'paused' : 'unpaused')
-            .replace('{generation}', generation.id.toString())
-        );
-        if (avgTime > 0) {
-            $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
-        }
-        $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
+    function firstRun() {
+        $workers.val(workerCount);
+        $games.val(gamesPerTourney);
+        $mutation.val(mutationRate);
+        $clones.val(clonesPerGeneration);
 
-        if (typeof best[0].individual === 'undefined') {
-            drawDemos();
-        }
+        run();
     }
 
     function run() {
@@ -95,6 +97,20 @@ $(function () {
         workers.forEach(function (w, i) {
             w.postMessage(exportGeneration(i));
         });
+    }
+
+    function update() {
+        $current.text($current.data(paused ? 'paused' : 'unpaused')
+            .replace('{generation}', generation.id.toString())
+        );
+        if (avgTime > 0) {
+            $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
+        }
+        $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
+
+        if (typeof best[0].individual === 'undefined') {
+            drawDemos();
+        }
     }
 
     function exportGeneration(chunk) {

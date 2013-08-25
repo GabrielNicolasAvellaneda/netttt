@@ -14,6 +14,9 @@
       .header {
         font-weight: bold;
       }
+      .control {
+        margin: 1ex;
+      }
       #status, #stats, #demos, #export {
         margin: 1em;
       }
@@ -38,11 +41,26 @@
       <div id="time"
           data-template="Avg. time: {time}ms"
       >&nbsp;</div>
-      <input id="pause" type="button" value="Pause"
-          data-paused="Resume" data-unpaused="Pause">
-      <!-- TODO: other controls: workers, games per tourney, mutation chance,
-          etc.
-      -->
+      <span class="control">
+        <input id="pause" type="button" value="Pause"
+            data-paused="Resume" data-unpaused="Pause">
+      </span>
+      <span class="control">
+        <label for="workers">Workers:</label>
+        <input id="workers" type="number" maxlength="2" size="2">
+      </span>
+      <span class="control">
+        <label for="games">Games:</label>
+        <input id="games" type="number" maxlength="4" size="4">
+      </span>
+      <span class="control">
+        <label for="mutation">Mutation rate:</label>
+        <input id="mutation" type="number" maxlength="6" size="6">
+      </span>
+      <span class="control">
+        <label for="clones">Clones:</label>
+        <input id="clones" type="number" maxlength="2" size="2">
+      </span>
     </div>
 
     <div id="stats">
