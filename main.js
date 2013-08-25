@@ -290,5 +290,4 @@ $(function () {
         setPaused(!paused);
     });
 
-    // TODO: export selector to choose among the top 10.
 });
