@@ -36,7 +36,6 @@ $(function () {
     var receivedCount = 0;
     var beginTime = 0;
     var endTime = 0;
-    var avgTime = 0;
     var demos = [
         {
             ctx: $('#x-random-demo-board')[0].getContext('2d'),
@@ -113,8 +112,8 @@ $(function () {
         $current.text($current.data(paused ? 'paused' : 'unpaused')
             .replace('{generation}', generation.id.toString())
         );
-        if (avgTime > 0) {
-            $time.text($time.data('template').replace('{time}', avgTime.toFixed(1)));
+        if (endTime > beginTime) {
+            $time.text($time.data('template').replace('{time}', Math.round(endTime - beginTime)));
         }
         $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
 
@@ -160,8 +159,6 @@ $(function () {
         generation.order();
 
         endTime = window.performance.now();
-        var duration = endTime - beginTime;
-        avgTime = (duration + avgTime * generation.id) / (generation.id + 1);
 
         score();
         drawGraph(graphCtx, $graph.width(), $graph.height());
