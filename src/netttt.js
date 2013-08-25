@@ -3,7 +3,7 @@ var NetTtt = (function (NetTtt) {
 
     // Both scaled by number of matches played.
     var WIN_SCORE = 1000;
-    var LOSS_SCORE = -10000;
+    var LOSS_SCORE = -5000;
 
     function Individual(id, net, score) {
         this.id = id;
