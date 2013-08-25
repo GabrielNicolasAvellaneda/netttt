@@ -284,7 +284,6 @@ $(function () {
         demos.forEach(function (d) {
             (d.game ? d.game : new Ttt.Game()).draw(d.ctx);
         });
-
     }
 
     $pauseButton.click(function (event) {
