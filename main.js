@@ -5,7 +5,7 @@ var best;
 var scores = [];
 var paused = false;
 var workerCount = 4;
-var gamesPerTourney = 600;
+var matchesPerTourney = 600;
 var mutationRate = 0.05;
 var clonesPerGeneration = 5;
 var workers = [];
@@ -22,7 +22,7 @@ $(function () {
     var $time = $('#time');
     var $pauseButton = $('#pause');
     var $workers = $('#workers');
-    var $games = $('#games');
+    var $matches = $('#matches');
     var $mutation = $('#mutation');
     var $clones = $('#clones');
     var $graph = $('#graph');
@@ -69,7 +69,7 @@ $(function () {
 
     function firstRun() {
         $workers.val(workerCount);
-        $games.val(gamesPerTourney);
+        $matches.val(matchesPerTourney);
         $mutation.val(mutationRate);
         $clones.val(clonesPerGeneration);
 
@@ -129,7 +129,10 @@ $(function () {
             generation: generation.id,
             individuals: generation.members.slice(
                 Math.round(chunk * size), Math.round((chunk + 1) * size)
-            ).map(function (m) { return m.individual.export(); })
+            ).map(function (m) { return m.individual.export(); }),
+            params: {
+                matchesPerTourney: matchesPerTourney
+            }
         };
     }
 
@@ -231,8 +234,8 @@ $(function () {
     }
 
     function drawGraph(ctx, width, height) {
-        var top = NetTtt.Individual.PERFECT_SCORE + 1;
-        var bottom = NetTtt.Individual.MINIMUM_SCORE - 1;
+        var top = NetTtt.Individual.SCORE_MAX + 1;
+        var bottom = NetTtt.Individual.SCORE_MIN - 1;
         var length = Math.min(scores.length, 200);
         var yScale = height / (top - bottom);
         var xStep = width / length;
@@ -300,17 +303,26 @@ $(function () {
         setPaused(!paused);
     });
 
+    function intInputChanged($item, min, max, _default) {
+        var x = parseInt($item.val(), 10);
+        if (isNaN(x)) {
+            x = _default;
+        }
+        else if (x < min) {
+            x = min;
+        }
+        else if (x > max) {
+            x = max;
+        }
+        $item.val(x);
+        return x;
+    }
+
     $workers.change(function (event) {
-        workerCount = parseInt($workers.val(), 10);
-        if (isNaN(workerCount)) {
-            workerCount = 4;
-        }
-        else if (workerCount < 1) {
-            workerCount = 1;
-        }
-        else if (workerCount > 16) {
-            workerCount = 16;
-        }
-        $workers.val(workerCount);
+        workerCount = intInputChanged($workers, 1, 16, 4);
+    });
+
+    $matches.change(function (event) {
+        matchesPerTourney = intInputChanged($matches, 10, 9999, 600);
     });
 });

@@ -1,9 +1,9 @@
 var NetTtt = (function (NetTtt) {
     "use strict";
 
-    var MATCHES_PER_PLAYER = 50;
-    var WIN_SCORE = 1;
-    var LOSS_SCORE = -10;
+    // Both scaled by number of matches played.
+    var WIN_SCORE = 1000;
+    var LOSS_SCORE = -10000;
 
     function Individual(id, net, score) {
         this.id = id;
@@ -11,8 +11,8 @@ var NetTtt = (function (NetTtt) {
         this.score = 0;
     }
 
-    Individual.MINIMUM_SCORE = MATCHES_PER_PLAYER * 2 * LOSS_SCORE;
-    Individual.PERFECT_SCORE = MATCHES_PER_PLAYER * 2 * WIN_SCORE;
+    Individual.SCORE_MIN = LOSS_SCORE;
+    Individual.SCORE_MAX = WIN_SCORE;
 
     function play(x, o) {
         var players = {};
@@ -36,7 +36,7 @@ var NetTtt = (function (NetTtt) {
         return winner;
     }
 
-    Individual.prototype.match = function Individual_match(turn) {
+    Individual.prototype.match = function Individual_match(turn, matches) {
         var me = new Ai.Neural(this.net);
         var opponent = new Ai.Random();
         var x = (turn === Ttt.X ? me : opponent);
@@ -45,17 +45,22 @@ var NetTtt = (function (NetTtt) {
         var winner = play(x, o);
 
         if (winner === turn) {
-            this.score += WIN_SCORE;
+            this.score += WIN_SCORE / matches;
         }
         else if (winner !== Ttt.TIE) {
-            this.score += LOSS_SCORE;
+            this.score += LOSS_SCORE / matches;
         }
     };
 
-    Individual.prototype.tourney = function Individual_tourney() {
-        [Ttt.X, Ttt.O].forEach(function (turn) {
-            for (var i = 0; i < MATCHES_PER_PLAYER; ++i) {
-                this.match(turn);
+    Individual.prototype.tourney = function Individual_tourney(matches) {
+        matches = matches || 600;
+
+        [
+            {turn: Ttt.X, matches: Math.round(matches / 2)},
+            {turn: Ttt.O, matches: matches - Math.round(matches / 2)}
+        ].forEach(function (obj) {
+            for (var i = 0; i < obj.matches; ++i) {
+                this.match(obj.turn, matches);
             }
         }, this);
         return this.score;
@@ -179,9 +184,9 @@ var NetTtt = (function (NetTtt) {
         });
     }
 
-    Generation.prototype.run = function Generation_run() {
+    Generation.prototype.run = function Generation_run(matchesPerTourney) {
         this.members.forEach(function (m) {
-            m.score = m.individual.tourney();
+            m.score = m.individual.tourney(matchesPerTourney);
         });
     };
 

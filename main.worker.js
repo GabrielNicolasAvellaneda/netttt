@@ -10,7 +10,7 @@
 
     function process(data) {
         var generation = importGeneration(data);
-        generation.run();
+        generation.run(data.params.matchesPerTourney);
         return exportResult(generation);
     }
 
