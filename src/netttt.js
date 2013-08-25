@@ -89,7 +89,7 @@ var NetTtt = (function (NetTtt) {
         net, modifyChance, minThresh, maxThresh, minWeight, maxWeight
     ) {
         modifyChance = (typeof modifyChance === 'undefined'
-            ? 0.05
+            ? 0.01
             : modifyChance
         );
         minThresh = minThresh || -100;

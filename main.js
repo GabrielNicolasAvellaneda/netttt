@@ -6,7 +6,7 @@ var scores = [];
 var paused = false;
 var workerCount = 4;
 var matchesPerTourney = 600;
-var mutationRate = 0.05;
+var mutationRate = 0.01;
 var clonesPerGeneration = 5;
 var workers = [];
 
@@ -334,7 +334,7 @@ $(function () {
     });
 
     $mutation.change(function (event) {
-        mutationRate = inputChanged($mutation, parseFloat, 0.0001, 1, 0.05);
+        mutationRate = inputChanged($mutation, parseFloat, 0.0001, 1, 0.01);
     });
 
     $clones.change(function (event) {
