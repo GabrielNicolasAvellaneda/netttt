@@ -260,7 +260,7 @@ $(function () {
             ctx.stroke();
         });
 
-        // TODO: legend
+        // TODO: scale so the lines aren't so flat, add a legend
 
         ctx.restore();
     }
