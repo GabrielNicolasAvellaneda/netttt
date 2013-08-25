@@ -109,13 +109,19 @@ $(function () {
     }
 
     function update() {
-        $current.text($current.data(paused ? 'paused' : 'unpaused')
+        $current.text($current.data(paused ? (receivedCount < workers.length ? 'pausing' : 'paused') : 'unpaused')
             .replace('{generation}', generation.id.toString())
         );
         if (endTime > beginTime) {
             $time.text($time.data('template').replace('{time}', Math.round(endTime - beginTime)));
         }
         $pauseButton.val($pauseButton.data(paused ? 'paused' : 'unpaused'));
+        if (paused && receivedCount < workers.length) {
+            $pauseButton.attr('disabled', true);
+        }
+        else {
+            $pauseButton.removeAttr('disabled');
+        }
 
         if (typeof best[0].individual === 'undefined') {
             drawDemos();
