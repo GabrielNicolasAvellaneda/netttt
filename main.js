@@ -334,7 +334,7 @@ $(function () {
     });
 
     $mutation.change(function (event) {
-        mutationRate = inputChanged($mutation, parseFloat, 0.0001, 1, 0.01);
+        mutationRate = inputChanged($mutation, parseFloat, 0.0001, 0.1, 0.01);
     });
 
     $clones.change(function (event) {

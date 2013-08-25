@@ -88,6 +88,8 @@ var NetTtt = (function (NetTtt) {
     function randomize(
         net, modifyChance, minThresh, maxThresh, minWeight, maxWeight
     ) {
+        // TODO: change this so at low chances, we still modify at least one
+        // part of a node.
         modifyChance = (typeof modifyChance === 'undefined'
             ? 0.01
             : modifyChance
@@ -112,6 +114,7 @@ var NetTtt = (function (NetTtt) {
 
     // Return a Neural.Net() sizes param with 9 in/out neurons, and 1-3
     // internal layers of 3-36 nodes each.
+    // TODO: on second thought, I don't the sizes should be random at first.
     function randomSizes(minLayers, maxLayers, minNodes, maxNodes) {
         minLayers = minLayers || 1;
         maxLayers = maxLayers || 3;
