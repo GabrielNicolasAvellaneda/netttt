@@ -76,11 +76,26 @@ var Ttt = (function (Ttt) {
         return 0;
     }
 
-    function Game() {
-        this.board = newBoard();
-        this.turn = X;
-        this.history = [];
+    function Game(board, turn, history) {
+        board = (typeof board === 'undefined' ? newBoard() : board);
+        turn = turn || X;
+        history = history || [];
+
+        this.board = board;
+        this.turn = turn;
+        this.history = history;
     }
+
+    Game.prototype.clone = function Game_clone() {
+        return new Game(
+            this.board, this.turn, this.history.map(function (h) { return h; })
+        );
+    };
+
+    Game.prototype.equals = function Game_equals(other) {
+        // Ignore history.
+        return (this.board === other.board && this.turn === other.turn);
+    };
 
     Game.prototype.getPiece = function Game_getPiece(square) {
         return getPiece(this.board, square);

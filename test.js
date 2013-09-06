@@ -79,10 +79,14 @@ test("Game logic", function () {
     g.move(0);
     strictEqual(g.turn, Ttt.X, "X goes third");
     deepEqual(g.history, [Ttt.newBoard(), Ttt.move(Ttt.newBoard(), 4, Ttt.X)], "history updated");
+    var g2 = g.clone();
+    ok(g.equals(g2), "clone equal");
+    deepEqual(g.history, g2.history, "clone history equal");
     g.undo();
     strictEqual(g.board, Ttt.move(Ttt.newBoard(), 4, Ttt.X), "board undone");
     strictEqual(g.turn, Ttt.O, "turn undone");
     deepEqual(g.history, [Ttt.newBoard()], "history undone");
+    ok(!g.equals(g2), "clone no longer equal");
 });
 
 module("Neural");
