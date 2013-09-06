@@ -264,6 +264,10 @@ $(function () {
         });
 
         // TODO: scale so the lines aren't so flat, add a legend
+        // TODO: instead of showing individual points, when enough generations
+        // have passed show each point as an average of however many points.
+        // That way you can still see the general shape of the whole history
+        // even after thousands of generations.
 
         ctx.restore();
     }
