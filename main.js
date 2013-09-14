@@ -29,7 +29,6 @@ $(function () {
     var $leaders = best.map(function (b, i) {
         return $('#leader-' + i.toString());
     });
-    var $exportSizes = $('#export-sizes');
     var $topExport = $('#top-export');
 
     var graphCtx = $graph[0].getContext('2d');
@@ -226,11 +225,6 @@ $(function () {
 
         if (topChanged) {
             $topExport.text(JSON.stringify(best[0].individual.export()));
-            var sizes = best[0].individual.net.getSizes().slice(1, -1);
-            $exportSizes.text(
-                $exportSizes.data('template')
-                .replace('{sizes}', sizes.toString())
-            );
 
             resetDemos();
         }

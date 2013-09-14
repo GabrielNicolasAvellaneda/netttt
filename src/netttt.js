@@ -112,26 +112,9 @@ var NetTtt = (function (NetTtt) {
         return net;
     }
 
-    // Return a Neural.Net() sizes param with 9 in/out neurons, and 1-3
-    // internal layers of 3-36 nodes each.
-    // TODO: on second thought, I don't the sizes should be random at first.
-    function randomSizes(minLayers, maxLayers, minNodes, maxNodes) {
-        minLayers = minLayers || 1;
-        maxLayers = maxLayers || 3;
-        minNodes = minNodes || 3;
-        maxNodes = maxNodes || 36;
-
-        var sizes = [18];
-        var internalLayers = intRand(minLayers, maxLayers);
-        for (var i = 0; i < internalLayers; ++i) {
-            sizes.push(intRand(minNodes, maxNodes));
-        }
-        sizes.push(1);
-        return sizes;
-    }
-
     Individual.newRandom = function Individual_newRandom(id) { // "static"
-        return new Individual(id, randomize(new Neural.Net(randomSizes()), 1));
+        var sizes = [18, 27, 9, 1];
+        return new Individual(id, randomize(new Neural.Net(sizes), 1));
     }
 
     Individual.prototype.reproduce = function Individual_reproduce(
