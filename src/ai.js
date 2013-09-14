@@ -8,8 +8,12 @@ var Ai = (function (Ai) {
         return a[Math.floor(Math.random() * a.length)];
     }
 
+    Random.prototype.getMoves = function Random_getMoves(game) {
+        return game.validMoves();
+    };
+
     Random.prototype.getMove = function Random_getMove(game) {
-        return arrayRand(game.validMoves());
+        return arrayRand(this.getMoves(game));
     };
 
     function sign(piece) {
@@ -111,11 +115,8 @@ var Ai = (function (Ai) {
 
     // The moves are all equal as far as negamax is concerned, so we've got to
     // choose the best one to play now.  If any moves are are an immediate win,
-    // we simply pick among them randomly.  Otherwise, we choose moves blocking
-    // an opponent's win, then we just pick the square with the highest
-    // evaluation.  If there are still moves that are equivalent after all
-    // that, we pick randomly.  Adding a random element keeps the opponent on
-    // their toes a little more than something entirely predictable.
+    // we return them.  Otherwise, we choose moves blocking an opponent's win,
+    // then we just pick the square with the highest evaluation.
     function resolveTies(board, moves, turn) {
         if (moves.length > 1) {
             var win = false;
@@ -127,7 +128,7 @@ var Ai = (function (Ai) {
                 return 0;
             }).moves;
             if (win) {
-                return arrayRand(moves);
+                return moves;
             }
         }
 
@@ -145,7 +146,7 @@ var Ai = (function (Ai) {
             }).moves;
         }
 
-        return arrayRand(moves);
+        return moves;
     }
 
     // Basic negamax implementation, with a few modifications (see
@@ -156,7 +157,7 @@ var Ai = (function (Ai) {
     // score, so we can choose among them.  We pick from the best scoring moves
     // with a simple heuristic (see resolveTies()).  Because we also use this
     // to instruct us as to which move to make, if we're at the top level we
-    // return the move itself instead of the score of the best move.
+    // return the list of best moves instead of their score.
     Smart.prototype.negamax = function Smart_negamax(board, turn, depth) {
         var winner = Ttt.winner(board);
         if (depth === this.maxDepth || winner) {
@@ -180,22 +181,29 @@ var Ai = (function (Ai) {
 
     // A small lookup table for the second move, so we don't have to go through
     // the whole algorithm just to pick the corners or the middle.
-    function getSecondMove(board) {
+    function getSecondMoves(board) {
         if (Ttt.getPiece(board, 4)) {
-            return arrayRand([0, 2, 6, 8]);
+            return [0, 2, 6, 8];
         }
-        return 4;
+        return [4];
     }
 
-    Smart.prototype.getMove = function Smart_getMove(game) {
+    Smart.prototype.getMoves = function Smart_getMoves(game) {
         if (Ttt.isEmpty(game.board)) {
-            return 4;
+            return [4];
         }
         if (Ttt.validMoves(game.board).length === 8) {
-            return getSecondMove(game.board);
+            return getSecondMoves(game.board);
         }
 
         return this.negamax(game.board, game.turn, 0);
+    };
+
+    // We pick randomly from among the best moves available.  Adding a random
+    // element keeps the opponent on their toes a little more than something
+    // entirely predictable.
+    Smart.prototype.getMove = function Smart_getMove(game) {
+        return arrayRand(this.getMoves(game));
     };
 
     function Neural(net) {
@@ -216,15 +224,19 @@ var Ai = (function (Ai) {
         return inputs;
     }
 
-    Neural.prototype.getMove = function Neural_getMove(game) {
+    Neural.prototype.getMoves = function Neural_getMoves(game) {
         var that = this;
-        return arrayRand(topScoring(game.validMoves(), function (move) {
+        return topScoring(game.validMoves(), function (move) {
             var board = Ttt.move(game.board, move, game.turn);
 
             that.net.reset();
             var outputs = that.net.run(getInputs(board, game.turn));
             return outputs[0];
-        }).moves);
+        }).moves;
+    };
+
+    Neural.prototype.getMove = function Neural_getMove(game) {
+        return arrayRand(this.getMoves(game));
     };
 
     Ai.Random = Random;
