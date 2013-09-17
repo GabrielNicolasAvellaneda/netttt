@@ -12,9 +12,11 @@ var Ai = (function (Ai) {
         return game.validMoves();
     };
 
-    Random.prototype.getMove = function Random_getMove(game) {
+    function Ai_getMove(game) {
         return arrayRand(this.getMoves(game));
-    };
+    }
+
+    Random.prototype.getMove = Ai_getMove;
 
     function sign(piece) {
         return (piece === 0 ? 0 : (piece === Ttt.X ? 1 : -1));
@@ -202,9 +204,7 @@ var Ai = (function (Ai) {
     // We pick randomly from among the best moves available.  Adding a random
     // element keeps the opponent on their toes a little more than something
     // entirely predictable.
-    Smart.prototype.getMove = function Smart_getMove(game) {
-        return arrayRand(this.getMoves(game));
-    };
+    Smart.prototype.getMove = Ai_getMove;
 
     function Neural(net) {
         this.net = net;
@@ -235,9 +235,7 @@ var Ai = (function (Ai) {
         }).moves;
     };
 
-    Neural.prototype.getMove = function Neural_getMove(game) {
-        return arrayRand(this.getMoves(game));
-    };
+    Neural.prototype.getMove = Ai_getMove;
 
     Ai.Random = Random;
     Ai.Smart = Smart;
