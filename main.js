@@ -91,22 +91,6 @@ $(function () {
         });
     }
 
-    function adjustWorkers() {
-        if (workers.length > workerCount) {
-            var excess = workers.length - workerCount;
-            workers.splice(-excess, excess);
-        }
-        else if (workers.length < workerCount) {
-            for (var i = workers.length; i < workerCount; ++i) {
-                workers[i] = new Worker('main.worker.js');
-
-                workers[i].onmessage = function (event) {
-                    process(event.data);
-                };
-            }
-        }
-    }
-
     function update() {
         $current.text($current.data(paused ? (receivedCount < workers.length ? 'pausing' : 'paused') : 'unpaused')
             .replace('{generation}', generation.id.toString())
@@ -124,6 +108,22 @@ $(function () {
 
         if (typeof best[0].individual === 'undefined') {
             drawDemos();
+        }
+    }
+
+    function adjustWorkers() {
+        if (workers.length > workerCount) {
+            var excess = workers.length - workerCount;
+            workers.splice(-excess, excess);
+        }
+        else if (workers.length < workerCount) {
+            for (var i = workers.length; i < workerCount; ++i) {
+                workers[i] = new Worker('main.worker.js');
+
+                workers[i].onmessage = function (event) {
+                    process(event.data);
+                };
+            }
         }
     }
 
