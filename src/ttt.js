@@ -37,14 +37,14 @@ var Ttt = (function (Ttt) {
         return s;
     }
 
-    function validMoves(board) {
-        var moves = [];
+    function emptySquares(board) {
+        var empty = [];
         for (var i = 0; i < 9; ++i, board >>= 2) {
             if ((board & 3) === 0) {
-                moves.push(i);
+                empty.push(i);
             }
         }
-        return moves;
+        return empty;
     }
 
     function move(board, square, piece) {
@@ -105,8 +105,8 @@ var Ttt = (function (Ttt) {
         return "" + (this.turn === X ? "X" : "O") + "@" + toString(this.board);
     };
 
-    Game.prototype.validMoves = function Game_validMoves() {
-        return validMoves(this.board);
+    Game.prototype.emptySquares = function Game_emptySquares() {
+        return emptySquares(this.board);
     };
 
     Game.prototype.move = function Game_move(square) {
@@ -239,7 +239,7 @@ var Ttt = (function (Ttt) {
     Ttt.getPiece = getPiece;
     Ttt.toArray = toArray;
     Ttt.toString = toString;
-    Ttt.validMoves = validMoves;
+    Ttt.emptySquares = emptySquares;
     Ttt.move = move;
     Ttt.winner = winner;
     Ttt.Game = Game;

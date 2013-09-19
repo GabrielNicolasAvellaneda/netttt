@@ -9,7 +9,7 @@ test("new board is empty", function () {
         strictEqual(Ttt.getPiece(b, i), 0, "getPiece(" + i + ") is blank");
     }
     deepEqual(Ttt.toArray(b), [0, 0, 0, 0, 0, 0, 0, 0, 0], "blank toArray");
-    deepEqual(Ttt.validMoves(b), [0, 1, 2, 3, 4, 5, 6, 7, 8], "all moves valid");
+    deepEqual(Ttt.emptySquares(b), [0, 1, 2, 3, 4, 5, 6, 7, 8], "all squares empty");
     strictEqual(Ttt.winner(b), 0, "no winner yet");
 });
 
@@ -20,7 +20,7 @@ test("making moves is internally consistent", function () {
     ok(!Ttt.isEmpty(b), "not empty");
     strictEqual(Ttt.getPiece(b, square), piece, "getPiece returns correct piece");
     deepEqual(Ttt.toArray(b), [0, 0, 0, 0, piece, 0, 0, 0, 0], "toArray has correct piece");
-    deepEqual(Ttt.validMoves(b), [0, 1, 2, 3, 5, 6, 7, 8], "same move isn't valid");
+    deepEqual(Ttt.emptySquares(b), [0, 1, 2, 3, 5, 6, 7, 8], "square isn't empty");
     strictEqual(Ttt.winner(b), 0, "no winner yet");
 });
 

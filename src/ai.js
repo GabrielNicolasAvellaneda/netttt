@@ -9,7 +9,7 @@ var Ai = (function (Ai) {
     }
 
     Random.prototype.getMoves = function Random_getMoves(game) {
-        return game.validMoves();
+        return game.emptySquares();
     };
 
     function Ai_getMove(game) {
@@ -167,7 +167,7 @@ var Ai = (function (Ai) {
         }
 
         var that = this;
-        var topScore = topScoring(Ttt.validMoves(board), function (move) {
+        var topScore = topScoring(Ttt.emptySquares(board), function (move) {
             return -that.negamax(
                 Ttt.move(board, move, turn),
                 (turn === Ttt.X ? Ttt.O : Ttt.X),
@@ -194,7 +194,7 @@ var Ai = (function (Ai) {
         if (Ttt.isEmpty(game.board)) {
             return [4];
         }
-        if (Ttt.validMoves(game.board).length === 8) {
+        if (Ttt.emptySquares(game.board).length === 8) {
             return getSecondMoves(game.board);
         }
 
@@ -226,7 +226,7 @@ var Ai = (function (Ai) {
 
     Neural.prototype.getMoves = function Neural_getMoves(game) {
         var that = this;
-        return topScoring(game.validMoves(), function (move) {
+        return topScoring(game.emptySquares(), function (move) {
             var board = Ttt.move(game.board, move, game.turn);
 
             that.net.reset();
