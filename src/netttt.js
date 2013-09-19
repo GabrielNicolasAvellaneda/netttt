@@ -36,6 +36,33 @@ var NetTtt = (function (NetTtt) {
         return winner;
     }
 
+    var testBoards = generateTestBoards();
+
+    function generateTestBoards(boards, visited, game) {
+        boards = boards || [[], [], [], [], [], [], [], [], []];
+        visited = visited || {};
+        game = game || new Ttt.Game();
+
+        if (visited[game.board] || game.winner())
+            return boards;
+
+        var emptySquares = game.emptySquares();
+
+        boards[9 - emptySquares.length].push({
+            board: game.board,
+            rightMoves: null
+        });
+        visited[game.board] = true;
+
+        emptySquares.forEach(function (move) {
+            game.move(move);
+            generateTestBoards(boards, visited, game);
+            game.undo();
+        });
+
+        return boards;
+    }
+
     Individual.prototype.match = function Individual_match(turn, matches) {
         var me = new Ai.Neural(this.net);
         var opponent = new Ai.Random();
