@@ -1,19 +1,6 @@
 var NetTtt = (function (NetTtt) {
     "use strict";
 
-    // Both scaled by number of matches played.
-    var WIN_SCORE = 1000;
-    var LOSS_SCORE = -5000;
-
-    function Individual(id, net, score) {
-        this.id = id;
-        this.net = net;
-        this.score = 0;
-    }
-
-    Individual.SCORE_MIN = LOSS_SCORE;
-    Individual.SCORE_MAX = WIN_SCORE;
-
     function play(x, o) {
         var players = {};
         players[Ttt.X] = x;
@@ -62,6 +49,19 @@ var NetTtt = (function (NetTtt) {
 
         return boards;
     }
+
+    // Both scaled by number of matches played.
+    var WIN_SCORE = 1000;
+    var LOSS_SCORE = -5000;
+
+    function Individual(id, net, score) {
+        this.id = id;
+        this.net = net;
+        this.score = 0;
+    }
+
+    Individual.SCORE_MIN = LOSS_SCORE;
+    Individual.SCORE_MAX = WIN_SCORE;
 
     Individual.prototype.match = function Individual_match(turn, matches) {
         var me = new Ai.Neural(this.net);
@@ -275,6 +275,7 @@ var NetTtt = (function (NetTtt) {
         return new Generation(id, individuals);
     }
 
+    NetTtt.play = play;
     NetTtt.Individual = Individual;
     NetTtt.Generation = Generation;
 
