@@ -54,14 +54,27 @@ var NetTtt = (function (NetTtt) {
     var WIN_SCORE = 1000;
     var LOSS_SCORE = -5000;
 
-    function Individual(id, net, score) {
+    function Individual(id, net) {
         this.id = id;
         this.net = net;
-        this.score = 0;
+        this.age = -Infinity;
+        this.score = -Infinity;
     }
 
     Individual.SCORE_MIN = LOSS_SCORE;
     Individual.SCORE_MAX = WIN_SCORE;
+
+    // Descending by age, then score.
+    Individual.compare = function Individual_compare(a, b) { // "static"
+        if (a.age !== b.age) {
+            return b.age - a.age;
+        }
+        return b.score - a.score;
+    };
+
+    Individual.prototype.compareTo = function Individual_compareTo(other) {
+        return Individual.compare(this, other);
+    };
 
     Individual.prototype.match = function Individual_match(turn, matches) {
         var me = new Ai.Neural(this.net);
@@ -82,6 +95,9 @@ var NetTtt = (function (NetTtt) {
     Individual.prototype.tourney = function Individual_tourney(matches) {
         matches = matches || 600;
 
+        this.age = 0;
+        this.score = 0;
+
         [
             {turn: Ttt.X, matches: Math.round(matches / 2)},
             {turn: Ttt.O, matches: matches - Math.round(matches / 2)}
@@ -90,7 +106,6 @@ var NetTtt = (function (NetTtt) {
                 this.match(obj.turn, matches);
             }
         }, this);
-        return this.score;
     };
 
     Individual.prototype.clone = function Individual_clone(id) {
@@ -186,33 +201,19 @@ var NetTtt = (function (NetTtt) {
 
     function Generation(id, individuals) {
         this.id = id || 0;
-        this.members = individuals.map(function (i) {
-            return {
-                // Allow the individual to specify its own id so our workers
-                // don't munge the id from the main thread.
-                individual: i,
-                score: -Infinity
-            };
-        });
+        // Allow the individuals to specify their own ids so our workers don't
+        // munge the ids from the main thread.
+        this.individuals = individuals;
     }
 
     Generation.prototype.run = function Generation_run(matchesPerTourney) {
-        this.members.forEach(function (m) {
-            m.score = m.individual.tourney(matchesPerTourney);
+        this.individuals.forEach(function (i) {
+            i.tourney(matchesPerTourney);
         });
     };
 
     Generation.prototype.order = function Generation_order() {
-        this.members.sort(function (a, b) { // By score descending.
-            return (b.score - a.score);
-        });
-    };
-
-    Generation.prototype.getIndividuals = function Generation_getIndividuals(
-    ) {
-        return this.members.map(function (m) {
-            return m.individual;
-        });
+        this.individuals.sort(Individual.compare);
     };
 
     Generation.prototype.next = function Generation_next(
@@ -222,7 +223,7 @@ var NetTtt = (function (NetTtt) {
         clones = clones || 5;
         children = children || 10;
         id = id || this.id + 1;
-        oldIndividuals = oldIndividuals || this.getIndividuals();
+        oldIndividuals = oldIndividuals || this.individuals;
 
         var newIndividuals = [];
         var i;

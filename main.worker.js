@@ -26,10 +26,11 @@
     function exportResult(generation) {
         return {
             generation: generation.id,
-            scores: generation.members.map(function (m) {
+            scores: generation.individuals.map(function (i) {
                 return {
-                    id: m.individual.id,
-                    score: m.score
+                    id: i.id,
+                    age: i.age,
+                    score: i.score
                 };
             })
         };

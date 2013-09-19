@@ -15,7 +15,10 @@ var workers = [];
 $(function () {
     generation = NetTtt.Generation.newRandom();
     best = [0,1,2,3,4,5,6,7,8,9].map(function () {
-        return {score: -Infinity};
+        return {
+            individual: null,
+            generation: -1
+        };
     });
 
     var $current = $('#current');
@@ -106,7 +109,7 @@ $(function () {
             $pauseButton.removeAttr('disabled');
         }
 
-        if (typeof best[0].individual === 'undefined') {
+        if (!best[0].individual) {
             drawDemos();
         }
     }
@@ -128,12 +131,12 @@ $(function () {
     }
 
     function exportGeneration(chunk) {
-        var size = generation.members.length / workers.length;
+        var size = generation.individuals.length / workers.length;
         return {
             generation: generation.id,
-            individuals: generation.members.slice(
+            individuals: generation.individuals.slice(
                 Math.round(chunk * size), Math.round((chunk + 1) * size)
-            ).map(function (m) { return m.individual.export(); }),
+            ).map(function (i) { return i.export(); }),
             params: {
                 matchesPerTourney: matchesPerTourney
             }
@@ -146,7 +149,8 @@ $(function () {
         }
 
         data.scores.forEach(function (s) {
-            generation.members[s.id].score = s.score;
+            generation.individuals[s.id].age = s.age;
+            generation.individuals[s.id].score = s.score;
         });
 
         if (++receivedCount === workers.length) {
@@ -155,8 +159,8 @@ $(function () {
     }
 
     function finishRun() {
-        generation.members.forEach(function (m) {
-            if (m.score === -Infinity) {
+        generation.individuals.forEach(function (i) {
+            if (i.age === -Infinity || i.score === -Infinity) {
                 throw new Error("Received incomplete result");
             }
         });
@@ -185,13 +189,13 @@ $(function () {
         var genIndex = 0;
         var count = best.length;
         for (var i = 0; i < count; ++i) {
-            if (best[i].score <= generation.members[genIndex].score) {
-                best.splice(i, 0, generation.members[genIndex++]);
-                best[i].generation = generation.id;
+            if (!best[i].individual || best[i].individual.compareTo(generation.individuals[genIndex]) >= 0) {
+                best.splice(i, 0, {
+                    individual: generation.individuals[genIndex++],
+                    generation: generation.id
+                });
 
-                if (i === 0) {
-                    topChanged = true;
-                }
+                topChanged = topChanged || i === 0;
             }
         }
         if (best.length != count) {
@@ -201,24 +205,24 @@ $(function () {
 
         var sumTopTen = 0;
         var sum = 0;
-        generation.members.forEach(function (m, i) {
-            if (i < 10) {
-                sumTopTen += m.score;
+        generation.individuals.forEach(function (i, index) {
+            if (index < 10) {
+                sumTopTen += i.score;
             }
-            sum += m.score;
+            sum += i.score;
         });
 
         scores.push({
-            top: generation.members[0].score,
+            top: generation.individuals[0].score,
             topTen: sumTopTen / 10,
-            avg: sum / generation.members.length
+            avg: sum / generation.individuals.length
         });
     }
 
     function bestChanged(topChanged) {
         $leaders.forEach(function (l, i) {
             l.text($leaders[0].data('template')
-                .replace('{score}', best[i].score.toFixed(1))
+                .replace('{score}', best[i].individual.score.toFixed(1))
                 .replace('{generation}', best[i].generation.toString())
             );
         });
