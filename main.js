@@ -189,7 +189,7 @@ $(function () {
         var genIndex = 0;
         var count = best.length;
         for (var i = 0; i < count; ++i) {
-            if (!best[i].individual || best[i].individual.compareTo(generation.individuals[genIndex]) >= 0) {
+            if (!best[i].individual || best[i].individual.compareTo(generation.individuals[genIndex]) <= 0) {
                 best.splice(i, 0, {
                     individual: generation.individuals[genIndex++],
                     generation: generation.id

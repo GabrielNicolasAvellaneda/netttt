@@ -64,12 +64,17 @@ var NetTtt = (function (NetTtt) {
     Individual.SCORE_MIN = LOSS_SCORE;
     Individual.SCORE_MAX = WIN_SCORE;
 
-    // Descending by age, then score.
+    // By age, then score.
     Individual.compare = function Individual_compare(a, b) { // "static"
         if (a.age !== b.age) {
-            return b.age - a.age;
+            return a.age - b.age;
         }
-        return b.score - a.score;
+        return a.score - b.score;
+    };
+
+    Individual.compareDescending = function Individual_compareDescending(a, b
+    ) { // "static"
+        return Individual.compare(b, a);
     };
 
     Individual.prototype.compareTo = function Individual_compareTo(other) {
@@ -213,7 +218,7 @@ var NetTtt = (function (NetTtt) {
     };
 
     Generation.prototype.order = function Generation_order() {
-        this.individuals.sort(Individual.compare);
+        this.individuals.sort(Individual.compareDescending);
     };
 
     Generation.prototype.next = function Generation_next(
