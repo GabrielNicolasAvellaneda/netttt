@@ -5,7 +5,6 @@ var best;
 var scores = [];
 var paused = false;
 var workerCount = 4;
-var matchesPerTourney = 600;
 var mutationRate = 0.01;
 var clonesPerGeneration = 5;
 var workers = [];
@@ -25,7 +24,6 @@ $(function () {
     var $time = $('#time');
     var $pauseButton = $('#pause');
     var $workers = $('#workers');
-    var $matches = $('#matches');
     var $mutation = $('#mutation');
     var $clones = $('#clones');
     var $graph = $('#graph');
@@ -70,7 +68,6 @@ $(function () {
 
     function firstRun() {
         $workers.val(workerCount);
-        $matches.val(matchesPerTourney);
         $mutation.val(mutationRate);
         $clones.val(clonesPerGeneration);
 
@@ -136,10 +133,7 @@ $(function () {
             generation: generation.id,
             individuals: generation.individuals.slice(
                 Math.round(chunk * size), Math.round((chunk + 1) * size)
-            ).map(function (i) { return i.export(); }),
-            params: {
-                matchesPerTourney: matchesPerTourney
-            }
+            ).map(function (i) { return i.export(); })
         };
     }
 
@@ -329,10 +323,6 @@ $(function () {
 
     $workers.change(function (event) {
         workerCount = inputChanged($workers, parseInt10, 1, 16, 4);
-    });
-
-    $matches.change(function (event) {
-        matchesPerTourney = inputChanged($matches, parseInt10, 10, 9999, 600);
     });
 
     $mutation.change(function (event) {

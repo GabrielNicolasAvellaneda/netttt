@@ -211,9 +211,9 @@ var NetTtt = (function (NetTtt) {
         this.individuals = individuals;
     }
 
-    Generation.prototype.run = function Generation_run(matchesPerTourney) {
+    Generation.prototype.run = function Generation_run() {
         this.individuals.forEach(function (i) {
-            i.tourney(matchesPerTourney);
+            i.tourney();
         });
     };
 
