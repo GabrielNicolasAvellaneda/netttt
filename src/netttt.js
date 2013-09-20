@@ -23,7 +23,7 @@ var NetTtt = (function (NetTtt) {
         return winner;
     }
 
-    var testBoards = generateTestBoards();
+    var testBoards = null;
 
     function generateTestBoards(boards, visited, game) {
         boards = boards || [[], [], [], [], [], [], [], [], []];
@@ -50,10 +50,6 @@ var NetTtt = (function (NetTtt) {
         return boards;
     }
 
-    // Both scaled by number of matches played.
-    var WIN_SCORE = 1000;
-    var LOSS_SCORE = -5000;
-
     function Individual(id, net) {
         this.id = id;
         this.net = net;
@@ -61,8 +57,8 @@ var NetTtt = (function (NetTtt) {
         this.score = -Infinity;
     }
 
-    Individual.SCORE_MIN = LOSS_SCORE;
-    Individual.SCORE_MAX = WIN_SCORE;
+    Individual.AGE_MAX = 8;
+    Individual.SCORE_MAX = 4520;
 
     // By age, then score.
     Individual.compare = function Individual_compare(a, b) { // "static"
@@ -81,35 +77,43 @@ var NetTtt = (function (NetTtt) {
         return Individual.compare(this, other);
     };
 
-    Individual.prototype.match = function Individual_match(turn, matches) {
-        var me = new Ai.Neural(this.net);
-        var opponent = new Ai.Random();
-        var x = (turn === Ttt.X ? me : opponent);
-        var o = (turn === Ttt.X ? opponent : me);
-
-        var winner = play(x, o);
-
-        if (winner === turn) {
-            this.score += WIN_SCORE / matches;
+    Individual.prototype.evaluateOne = function Individual_evaluateOne(b) {
+        var game = new Ttt.Game(b.board);
+        if (!b.rightMoves) {
+            b.rightMoves = new Ai.Smart().getMoves(game);
         }
-        else if (winner !== Ttt.TIE) {
-            this.score += LOSS_SCORE / matches;
+
+        var anyRight = false;
+        var anyWrong = false;
+        new Ai.Neural(this.net).getMoves(game).forEach(function (move) {
+            if (b.rightMoves.indexOf(move) >= 0) {
+                anyRight = true;
+            }
+            else {
+                anyWrong = true;
+            }
+        });
+
+        if (anyRight) {
+            this.score++;
         }
+
+        return anyWrong;
     };
 
-    Individual.prototype.tourney = function Individual_tourney(matches) {
-        matches = matches || 600;
+    Individual.prototype.evaluate = function Individual_evaluate() {
+        testBoards = testBoards || generateTestBoards();
 
-        this.age = 0;
         this.score = 0;
 
-        [
-            {turn: Ttt.X, matches: Math.round(matches / 2)},
-            {turn: Ttt.O, matches: matches - Math.round(matches / 2)}
-        ].forEach(function (obj) {
-            for (var i = 0; i < obj.matches; ++i) {
-                this.match(obj.turn, matches);
-            }
+        testBoards.every(function (boards, depth) {
+            this.age = depth;
+
+            var done = false;
+            boards.forEach(function (b) {
+                done = this.evaluateOne(b) || done;
+            }, this);
+            return !done;
         }, this);
     };
 
@@ -213,7 +217,7 @@ var NetTtt = (function (NetTtt) {
 
     Generation.prototype.run = function Generation_run() {
         this.individuals.forEach(function (i) {
-            i.tourney();
+            i.evaluate();
         });
     };
 

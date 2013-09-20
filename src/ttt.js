@@ -78,7 +78,7 @@ var Ttt = (function (Ttt) {
 
     function Game(board, turn, history) {
         board = (typeof board === 'undefined' ? newBoard() : board);
-        turn = turn || X;
+        turn = turn || (emptySquares(board).length % 2 === 0 ? O : X);
         history = history || [];
 
         this.board = board;

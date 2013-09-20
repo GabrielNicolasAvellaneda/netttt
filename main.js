@@ -217,6 +217,7 @@ $(function () {
         $leaders.forEach(function (l, i) {
             l.text($leaders[0].data('template')
                 .replace('{score}', best[i].individual.score.toFixed(1))
+                .replace('{age}', best[i].individual.age.toString())
                 .replace('{generation}', best[i].generation.toString())
             );
         });
@@ -230,7 +231,7 @@ $(function () {
 
     function drawGraph(ctx, width, height) {
         var top = NetTtt.Individual.SCORE_MAX + 1;
-        var bottom = NetTtt.Individual.SCORE_MIN - 1;
+        var bottom = -1;
         var length = Math.min(scores.length, 200);
         var yScale = height / (top - bottom);
         var xStep = width / length;
