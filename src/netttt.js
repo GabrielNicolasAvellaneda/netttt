@@ -229,7 +229,7 @@ var NetTtt = (function (NetTtt) {
         mutationRate, clones, children, id, oldIndividuals
     ) {
         mutationRate = mutationRate || 0.05;
-        clones = clones || 5;
+        clones = (typeof clones === 'undefined' ? 0 : clones);
         children = children || 10;
         id = id || this.id + 1;
         oldIndividuals = oldIndividuals || this.individuals;

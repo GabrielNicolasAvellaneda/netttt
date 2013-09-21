@@ -6,7 +6,6 @@ var scores = [];
 var paused = false;
 var workerCount = 4;
 var mutationRate = 0.01;
-var clonesPerGeneration = 5;
 var workers = [];
 
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
@@ -25,7 +24,6 @@ $(function () {
     var $pauseButton = $('#pause');
     var $workers = $('#workers');
     var $mutation = $('#mutation');
-    var $clones = $('#clones');
     var $graph = $('#graph');
     var $leaders = best.map(function (b, i) {
         return $('#leader-' + i.toString());
@@ -69,7 +67,6 @@ $(function () {
     function firstRun() {
         $workers.val(workerCount);
         $mutation.val(mutationRate);
-        $clones.val(clonesPerGeneration);
 
         run();
     }
@@ -166,7 +163,7 @@ $(function () {
         score();
         drawGraph(graphCtx, $graph.width(), $graph.height());
 
-        generation = generation.next(mutationRate, clonesPerGeneration);
+        generation = generation.next(mutationRate);
 
         run();
     }
@@ -328,9 +325,5 @@ $(function () {
 
     $mutation.change(function (event) {
         mutationRate = inputChanged($mutation, parseFloat, 0.0001, 0.1, 0.01);
-    });
-
-    $clones.change(function (event) {
-        clonesPerGeneration = inputChanged($clones, parseInt10, 0, 20, 5);
     });
 });
