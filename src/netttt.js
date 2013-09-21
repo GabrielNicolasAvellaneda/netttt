@@ -94,11 +94,11 @@ var NetTtt = (function (NetTtt) {
             }
         });
 
-        if (anyRight) {
+        if (anyRight && !anyWrong) {
             this.score++;
         }
 
-        return anyWrong;
+        return !anyWrong;
     };
 
     Individual.prototype.evaluate = function Individual_evaluate() {
@@ -106,15 +106,16 @@ var NetTtt = (function (NetTtt) {
 
         this.score = 0;
 
-        testBoards.every(function (boards, depth) {
-            this.age = depth;
-
-            var done = false;
+        var failedDepth = -1;
+        testBoards.forEach(function (boards, depth) {
             boards.forEach(function (b) {
-                done = this.evaluateOne(b) || done;
+                if (!this.evaluateOne(b) && failedDepth < 0) {
+                    failedDepth = depth;
+                }
             }, this);
-            return !done;
         }, this);
+
+        this.age = (failedDepth < 0 ? testBoards.length - 1 : failedDepth);
     };
 
     Individual.prototype.clone = function Individual_clone(id) {
