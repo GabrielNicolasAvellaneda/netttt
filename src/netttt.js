@@ -119,10 +119,10 @@ var NetTtt = (function (NetTtt) {
                 }
             }, this);
 
-            // We go at least to boards with 4 moves to differentiate between
-            // results at the same age.  There are 1090 possible scores before
-            // boards with 5 moves, which should be plenty.
-            return (failedDepth < 0 || depth <= 4);
+            // We go at least to boards with 3 moves to differentiate between
+            // results at the same age.  There are 334 possible scores before
+            // boards with 4 moves, which should be plenty for 100 individuals.
+            return (failedDepth < 0 || depth < 3);
         }, this);
 
         this.age = (failedDepth < 0 ? testBoards.length : failedDepth);
