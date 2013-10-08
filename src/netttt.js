@@ -112,12 +112,17 @@ var NetTtt = (function (NetTtt) {
         this.score = 0;
 
         var failedDepth = -1;
-        testBoards.forEach(function (boards, depth) {
+        testBoards.every(function (boards, depth) {
             boards.forEach(function (b) {
                 if (!this.evaluateOne(b) && failedDepth < 0) {
                     failedDepth = depth;
                 }
             }, this);
+
+            // We go at least to boards with 4 moves to differentiate between
+            // results at the same age.  There are 1090 possible scores before
+            // boards with 5 moves, which should be plenty.
+            return (failedDepth < 0 || depth <= 4);
         }, this);
 
         this.age = (failedDepth < 0 ? testBoards.length - 1 : failedDepth);
