@@ -233,6 +233,15 @@ var NetTtt = (function (NetTtt) {
     };
 
     Generation.prototype.order = function Generation_order() {
+        // Shuffle individuals before sorting, to randomize the order of nets
+        // with the same score.
+        for (var i = this.individuals.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = this.individuals[i];
+            this.individuals[i] = this.individuals[j];
+            this.individuals[j] = t;
+        }
+
         this.individuals.sort(Individual.compareDescending);
     };
 
