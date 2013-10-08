@@ -125,7 +125,7 @@ var NetTtt = (function (NetTtt) {
             return (failedDepth < 0 || depth <= 4);
         }, this);
 
-        this.age = (failedDepth < 0 ? testBoards.length - 1 : failedDepth);
+        this.age = (failedDepth < 0 ? testBoards.length : failedDepth);
     };
 
     Individual.prototype.clone = function Individual_clone(id) {
