@@ -25,15 +25,20 @@ var NetTtt = (function (NetTtt) {
 
     var testBoards = null;
 
+    // We want to test our neural nets against the smart AI for every relevant
+    // board, which is every board where there's more than one valid move to be
+    // made.  This returns an array, keyed by how many pieces are filled in,
+    // of arrays of boards.  We also cache the correct moves, according to the
+    // smart AI, for each board so we don't have to look it up more than once.
     function generateTestBoards(boards, visited, game) {
-        boards = boards || [[], [], [], [], [], [], [], [], []];
+        boards = boards || [[], [], [], [], [], [], [], []];
         visited = visited || {};
         game = game || new Ttt.Game();
 
-        if (visited[game.board] || game.winner())
-            return boards;
-
         var emptySquares = game.emptySquares();
+
+        if (visited[game.board] || game.winner() || emptySquares.length <= 1)
+            return boards;
 
         boards[9 - emptySquares.length].push({
             board: game.board,
@@ -57,8 +62,8 @@ var NetTtt = (function (NetTtt) {
         this.score = -Infinity;
     }
 
-    Individual.AGE_MAX = 8;
-    Individual.SCORE_MAX = 4520;
+    Individual.AGE_MAX = 8; // 8 is the length of testBoards.
+    Individual.SCORE_MAX = 4298; // 4298 = sum of array lengths in testBoards.
 
     // By age, then score.
     Individual.compare = function Individual_compare(a, b) { // "static"
