@@ -161,7 +161,7 @@ var NetTtt = (function (NetTtt) {
         minWeight = minWeight || -10;
         maxWeight = maxWeight || 10;
 
-        net.eachNode(function (node) {
+        net.eachNode(false, function (node) {
             node.threshold = randomizeValue(
                 node.threshold, modifyChance, minThresh, maxThresh
             );
