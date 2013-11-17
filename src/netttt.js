@@ -305,6 +305,40 @@ var NetTtt = (function (NetTtt) {
         return new Generation(id, individuals);
     }
 
+    Generation.prototype.export = function Generation_export(chunk) {
+        if (typeof chunk === 'undefined') {
+            chunk = {
+                index: 0,
+                total: 1
+            };
+        }
+
+        var size = this.individuals.length / chunk.total;
+        return {
+            id: this.id,
+            individuals: this.individuals.slice(
+                Math.round(chunk.index * size),
+                Math.round((chunk.index + 1) * size)
+            ).map(function (i) { return i.export(); })
+        };
+    }
+
+    Generation.import = function Generation_import(obj) { // "static"
+        if (typeof obj.id === 'undefined' || !Array.isArray(obj.individuals)) {
+            throw new Error(
+                "NetTtt.Individual.import() needs an object with properties "
+                + "id and Array individuals"
+            );
+        }
+
+        var id = obj.id;
+        var individuals = obj.individuals;
+
+        return new Generation(id, individuals.map(function (i) {
+            return Individual.import(i);
+        }));
+    }
+
     NetTtt.play = play;
     NetTtt.Individual = Individual;
     NetTtt.Generation = Generation;

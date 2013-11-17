@@ -9,18 +9,9 @@
     };
 
     function process(data) {
-        var generation = importGeneration(data);
+        var generation = NetTtt.Generation.import(data);
         generation.run();
         return exportResult(generation);
-    }
-
-    function importGeneration(data) {
-        var id = data.generation;
-        var exports = data.individuals;
-
-        return new NetTtt.Generation(id, exports.map(function (e) {
-            return NetTtt.Individual.import(e);
-        }));
     }
 
     function exportResult(generation) {

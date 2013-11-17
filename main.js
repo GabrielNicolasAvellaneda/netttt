@@ -125,13 +125,10 @@ $(function () {
     }
 
     function exportGeneration(chunk) {
-        var size = generation.individuals.length / workers.length;
-        return {
-            generation: generation.id,
-            individuals: generation.individuals.slice(
-                Math.round(chunk * size), Math.round((chunk + 1) * size)
-            ).map(function (i) { return i.export(); })
-        };
+        return generation.export({
+            index: chunk,
+            total: workers.length
+        });
     }
 
     function process(data) {
