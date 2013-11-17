@@ -10,23 +10,18 @@ var workers = [];
 // TODO: use seedrandom? <https://github.com/davidbau/seedrandom>
 
 $(function () {
-    generation = NetTtt.Generation.newRandom();
-    top_ = [0,1,2,3,4,5,6,7,8,9].map(function () {
-        return {
-            individual: null,
-            generation: -1
-        };
-    });
+    var STORAGE_KEY = 'netttt.state';
 
     var $current = $('#current');
     var $time = $('#time');
     var $pauseButton = $('#pause');
+    var $resetButton = $('#reset');
     var $workers = $('#workers');
     var $mutation = $('#mutation');
     var $generationBest = $('#generation-best');
     var $generationTop = $('#generation-top-ten');
     var $generationAverage = $('#generation-average');
-    var $leaders = top_.map(function (b, i) {
+    var $leaders = [0,1,2,3,4,5,6,7,8,9].map(function (i) {
         return $('#leader-' + i.toString());
     });
     var $topExport = $('#top-export');
@@ -62,11 +57,35 @@ $(function () {
     ];
     var demoTimerId = undefined;
 
-    firstRun();
+    $workers.val(workerCount);
+    $mutation.val(mutationRate);
 
-    function firstRun() {
-        $workers.val(workerCount);
-        $mutation.val(mutationRate);
+    reset();
+
+    function restore() {
+        return (localStorage[STORAGE_KEY]
+            ? NetTtt.Generation.import($.parseJSON(localStorage[STORAGE_KEY]))
+            : null
+        );
+    }
+
+    function save(generation) {
+        localStorage[STORAGE_KEY] = JSON.stringify(generation.export());
+    }
+
+    function clear() {
+        localStorage.removeItem(STORAGE_KEY);
+    }
+
+    function reset() {
+        generation = restore() || NetTtt.Generation.newRandom();
+        top_ = [0,1,2,3,4,5,6,7,8,9].map(function () {
+            return {
+                individual: null,
+                generation: -1
+            };
+        });
+        paused = false;
 
         run();
     }
@@ -101,6 +120,13 @@ $(function () {
         }
         else {
             $pauseButton.removeAttr('disabled');
+        }
+
+        if (paused && receivedCount === workers.length) {
+            $resetButton.removeAttr('disabled');
+        }
+        else {
+            $resetButton.attr('disabled', true);
         }
 
         if (!top_[0].individual) {
@@ -159,6 +185,7 @@ $(function () {
         score();
 
         generation = generation.next(mutationRate);
+        save(generation);
         run();
     }
 
@@ -267,6 +294,11 @@ $(function () {
 
     $pauseButton.click(function (event) {
         setPaused(!paused);
+    });
+
+    $resetButton.click(function (event) {
+        clear();
+        reset();
     });
 
     function inputChanged($item, parse, min, max, _default) {

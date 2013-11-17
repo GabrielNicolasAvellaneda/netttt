@@ -74,6 +74,9 @@
             data-paused="Resume" data-unpaused="Pause">
       </span>
       <span class="control">
+        <input id="reset" type="button" value="Reset" disabled>
+      </span>
+      <span class="control">
         <label for="workers">Workers:</label>
         <input id="workers" type="number" maxlength="2" size="2">
       </span>
@@ -144,8 +147,6 @@
       <h4>Top net source:</h4>
       <textarea id="top-export" rows="16" cols="64"></textarea>
     </div>
-
-    <!-- TODO: save/load buttons that keep state in the browser storage -->
 
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="src/ttt.js"></script>
