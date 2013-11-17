@@ -11,6 +11,10 @@
       h2, h4 {
         margin: 0;
       }
+      #about {
+        float: right;
+        width: calc(100% - 600px - 2em - 8ex);
+      }
       .control {
         margin: 1ex;
       }
@@ -27,6 +31,35 @@
     </style>
   </head>
   <body>
+    <div id="about">
+      <h4>What is this?</h4>
+      <p>
+        <strong>netttt</strong> uses a genetic algorithm to evolve a neural net
+        to play tic tac toe with some intelligence.  It's written in pure
+        JavaScript and runs completely in your browser.  It utilizes web
+        workers to parallelize the work, and local storage to save your
+        progress.
+      </p>
+      <h4>How does it work?</h4>
+      <p>
+        There's a lot going on under the hood here.  TODO
+      </p>
+      <ul>
+        <li>The foundation is a "Smart" AI that plays a perfect game, that means 1) never loses, 2) tries to win quickly, and 3) makes moves that allow the opponent to fumble</li>
+        <li>Generate all board states, use AI to figure out the "right" moves in each case</li>
+        <li>Game state for each valid move from each board state is fed into net, output is desirability of that state, highest is used as move to make</li>
+        <li>Nets in each generation are scored based on how often they're right</li>
+        <li>Best nets "reproduce" to the next generation</li>
+        <li>Also some random perturbance</li>
+      </ul>
+      <h4>Links</h4>
+      <ul>
+        <li><a href="play.html">Play</a></li>
+        <li><a href="test.html">Tests</a></li>
+        <li><a href="https://github.com/chazomaticus/netttt">Code</a></li>
+      </ul>
+    </div>
+
     <div id="status">
       <h2 id="current"
           data-unpaused="Running generation {generation}..."
@@ -114,7 +147,6 @@
       <!-- TODO: link to play with AI box filled in -->
     </div>
 
-    <!-- TODO: links, about, etc. -->
     <!-- TODO: save/load buttons that keep state in the browser storage -->
 
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
