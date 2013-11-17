@@ -17,9 +17,6 @@
       #status, #stats, #demos, #export {
         margin: 1em;
       }
-      #graph, #leaderboard {
-        float: left;
-      }
       .clear {
         clear: both;
       }
@@ -54,7 +51,20 @@
     </div>
 
     <div id="stats">
-      <canvas id="graph" width="500" height="250"></canvas>
+      <div id="summary">
+        <h4>
+          Last generation:
+        </h4>
+        <dl>
+          <dt>Top score:</dt>
+          <dd id="generation-best" data-template="{score} (age {age})"
+          >&nbsp;</dd>
+          <dt>Average score, top ten:</dt>
+          <dd id="generation-top-ten" data-template="{score}">&nbsp;</dd>
+          <dt>Average score:</dt>
+          <dd id="generation-average" data-template="{score}">&nbsp;</dd>
+        </dl>
+      </div>
       <div id="leaderboard">
         <h4>
           Top ten nets:
@@ -75,7 +85,6 @@
         </ol>
       </div>
     </div>
-    <div class="clear"></div>
 
     <div id="demos">
       <h4>Top net playing as:</h4>

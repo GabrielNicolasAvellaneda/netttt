@@ -1,8 +1,7 @@
 "use strict";
 
 var generation;
-var best;
-var scores = [];
+var top_;
 var paused = false;
 var workerCount = 4;
 var mutationRate = 0.01;
@@ -12,7 +11,7 @@ var workers = [];
 
 $(function () {
     generation = NetTtt.Generation.newRandom();
-    best = [0,1,2,3,4,5,6,7,8,9].map(function () {
+    top_ = [0,1,2,3,4,5,6,7,8,9].map(function () {
         return {
             individual: null,
             generation: -1
@@ -24,13 +23,14 @@ $(function () {
     var $pauseButton = $('#pause');
     var $workers = $('#workers');
     var $mutation = $('#mutation');
-    var $graph = $('#graph');
-    var $leaders = best.map(function (b, i) {
+    var $generationBest = $('#generation-best');
+    var $generationTop = $('#generation-top-ten');
+    var $generationAverage = $('#generation-average');
+    var $leaders = top_.map(function (b, i) {
         return $('#leader-' + i.toString());
     });
     var $topExport = $('#top-export');
 
-    var graphCtx = $graph[0].getContext('2d');
     var receivedCount = 0;
     var beginTime = 0;
     var endTime = 0;
@@ -103,7 +103,7 @@ $(function () {
             $pauseButton.removeAttr('disabled');
         }
 
-        if (!best[0].individual) {
+        if (!top_[0].individual) {
             drawDemos();
         }
     }
@@ -157,14 +157,11 @@ $(function () {
         });
 
         generation.order();
-
         endTime = window.performance.now();
 
         score();
-        drawGraph(graphCtx, $graph.width(), $graph.height());
 
         generation = generation.next(mutationRate);
-
         run();
     }
 
@@ -176,22 +173,22 @@ $(function () {
     }
 
     function score() {
-        var topChanged = false;
+        var bestChanged = false;
         var genIndex = 0;
-        var count = best.length;
+        var count = top_.length;
         for (var i = 0; i < count; ++i) {
-            if (!best[i].individual || best[i].individual.compareTo(generation.individuals[genIndex]) < 0) {
-                best.splice(i, 0, {
+            if (!top_[i].individual || top_[i].individual.compareTo(generation.individuals[genIndex]) < 0) {
+                top_.splice(i, 0, {
                     individual: generation.individuals[genIndex++],
                     generation: generation.id
                 });
 
-                topChanged = topChanged || i === 0;
+                bestChanged = bestChanged || i === 0;
             }
         }
-        if (best.length != count) {
-            best = best.slice(0, count);
-            bestChanged(topChanged);
+        if (top_.length != count) {
+            top_ = top_.slice(0, count);
+            topChanged(bestChanged);
         }
 
         var sumTopTen = 0;
@@ -203,63 +200,38 @@ $(function () {
             sum += i.score;
         });
 
-        scores.push({
-            top: generation.individuals[0].score,
-            topTen: sumTopTen / 10,
-            avg: sum / generation.individuals.length
-        });
+        lastGenerationChanged(generation.individuals[0], sumTopTen / 10,
+            sum / generation.individuals.length
+        );
     }
 
-    function bestChanged(topChanged) {
+    function lastGenerationChanged(best, top, average) {
+        $generationBest.text($generationBest.data('template')
+            .replace('{score}', best.score.toString())
+            .replace('{age}', best.age.toString())
+        );
+        $generationTop.text($generationTop.data('template')
+            .replace('{score}', top.toFixed(1))
+        );
+        $generationAverage.text($generationAverage.data('template')
+            .replace('{score}', average.toFixed(1))
+        );
+    }
+
+    function topChanged(bestChanged) {
         $leaders.forEach(function (l, i) {
             l.text($leaders[0].data('template')
-                .replace('{score}', best[i].individual.score.toFixed(1))
-                .replace('{age}', best[i].individual.age.toString())
-                .replace('{generation}', best[i].generation.toString())
+                .replace('{score}', top_[i].individual.score.toString())
+                .replace('{age}', top_[i].individual.age.toString())
+                .replace('{generation}', top_[i].generation.toString())
             );
         });
 
-        if (topChanged) {
-            $topExport.text(JSON.stringify(best[0].individual.export()));
+        if (bestChanged) {
+            $topExport.text(JSON.stringify(top_[0].individual.export()));
 
             resetDemos();
         }
-    }
-
-    function drawGraph(ctx, width, height) {
-        var top = NetTtt.Individual.SCORE_MAX + 1;
-        var bottom = -1;
-        var length = Math.min(scores.length, 200);
-        var yScale = height / (top - bottom);
-        var xStep = width / length;
-
-        ctx.save();
-
-        ctx.lineWidth = 2;
-
-        ctx.clearRect(0, 0, width, height);
-        [{s: '#44f', p: 'avg'}, {s: '#4f4', p: 'topTen'}, {s: '#f44', p: 'top'}].forEach(function (which) {
-            ctx.strokeStyle = which.s;
-            ctx.beginPath();
-
-            var start = Math.max(scores.length - length, 0);
-            ctx.moveTo(0, height - (start === 0 ? 0 : (scores[start - 1][which.p] - bottom) * yScale));
-            var x = 0;
-            for (var i = start; i < scores.length; ++i) {
-                x += xStep;
-                ctx.lineTo(x, height - (scores[i][which.p] - bottom) * yScale);
-            }
-
-            ctx.stroke();
-        });
-
-        // TODO: scale so the lines aren't so flat, add a legend
-        // TODO: instead of showing individual points, when enough generations
-        // have passed show each point as an average of however many points.
-        // That way you can still see the general shape of the whole history
-        // even after thousands of generations.
-
-        ctx.restore();
     }
 
     function resetDemos() {
@@ -282,7 +254,7 @@ $(function () {
             }
 
             var ai = (d.game.turn === d.player
-                ? new Ai.Neural(best[0].individual.net)
+                ? new Ai.Neural(top_[0].individual.net)
                 : d.opponent
             );
             d.game.move(ai.getMove(d.game));
