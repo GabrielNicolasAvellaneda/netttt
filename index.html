@@ -14,6 +14,7 @@
       #about {
         float: right;
         width: calc(100% - 600px - 2em - 8ex);
+        min-width: 10em;
       }
       .control {
         margin: 1ex;
@@ -21,12 +22,12 @@
       #status, #stats, #demos, #export {
         margin: 1em;
       }
-      .clear {
-        clear: both;
-      }
       .demo-container {
         float: left;
         margin: 1ex;
+      }
+      #export {
+        clear: left;
       }
     </style>
   </head>
@@ -34,24 +35,89 @@
     <div id="about">
       <h4>What is this?</h4>
       <p>
-        <strong>netttt</strong> uses a genetic algorithm to evolve a neural net
-        to play tic tac toe with some intelligence.  It's written in pure
+        <em>netttt</em> uses a genetic algorithm to evolve neural networks to
+        play tic tac toe with some intelligence.  It's written in pure
         JavaScript and runs completely in your browser.  It utilizes web
         workers to parallelize the work, and local storage to save your
         progress.
       </p>
       <h4>How does it work?</h4>
       <p>
-        There's a lot going on under the hood here.  TODO
+        First, we generate every tic tac toe game state where the next move has
+        more than one valid option, a mere 4,298 states.  We then use an AI
+        that plays a perfect game to determine the "right" move or set of
+        equivalent moves to make in each case.  Perfect means the AI 1) never
+        loses, 2) tries to win as quickly as possible, and 3) moves to take
+        advantage of opponent fumbles.
       </p>
-      <ul>
-        <li>The foundation is a "Smart" AI that plays a perfect game, that means 1) never loses, 2) tries to win quickly, and 3) makes moves that allow the opponent to fumble</li>
-        <li>Generate all board states, use AI to figure out the "right" moves in each case</li>
-        <li>Game state for each valid move from each board state is fed into net, output is desirability of that state, highest is used as move to make</li>
-        <li>Nets in each generation are scored based on how often they're right</li>
-        <li>Best nets "reproduce" to the next generation</li>
-        <li>Also some random perturbance</li>
-      </ul>
+      <p>
+        We start with a randomly generated population of neural nets of fixed
+        geometry.  Each individual net is scored on how many times it gives a
+        "right" answer in response to being asked what move to make for each
+        game state.  The top scoring nets are favored to populate the next
+        generation through reproduction with a chance of random mutation.  The
+        hope is that after letting it run for a while, you'll end up with a net
+        that can play the game relatively well.
+      </p>
+      <h4>Nothing's happening...</h4>
+      <p>
+        It's easy for the score to get stuck for long periods of time, maybe at
+        a local maximum.  Since it's random, you never know when the right
+        mutation will happen.  Give it a few tens of thousands of generations
+        or so.
+      </p>
+      <h4>What is...</h4>
+      <dl>
+        <dt>Age?</dt>
+        <dd>
+          The trials each individual goes through are ordered from fewest to
+          most squares occupied.  Age is a measure of how many complete trial
+          blocks an individual survives.  An individual that scores age
+          <em>x</em> can play a perfect game until there are <em>x</em> pieces
+          on the board.
+        </dd>
+      </dl>
+      <h4>About the AI</h4>
+      <p>
+        The perfect AI is currently implemented using a modified negamax search
+        algorithm.  This is probably the wrong choice.  Any tree-based search
+        that assumes each player is playing the best move every turn will run
+        into the same problem: all games end in a draw very quickly, making
+        most moves equivalent, as highlighted in <em>WarGames</em>.  My
+        modifications make the search favor winning quickly and try to
+        capitalize on an opponent who might not always make the best move.  A
+        better solution would probably be to simply use the algorithm described
+        in <a href="https://en.wikipedia.org/wiki/Tic-tac-toe">Wikipedia's tic
+        tac toe page</a>.
+      </p>
+      <h4>About the neural nets</h4>
+      <p>
+        The nets are simple feed-forward artificial neural networks.  They use
+        a binary activation function with a variable bias (inverted in the code
+        as a "threshold") and weight for each connection.
+      </p>
+      <p>
+        Each net has 18 input neurons, two for each game square, a few internal
+        layers of different sizes, and one output which represents the
+        desirability of the input game state.  A square's first neuron receives
+        input if that square is occupied by the player for whom we're finding
+        moves, and the second neuron receives input if it's occupied by the
+        opponent.  To find a move to make, each valid move is applied and the
+        resulting game state is evaluated.  The move with the highest scoring
+        state is chosen.
+      </p>
+      <h4>About the genetic algorithm</h4>
+      <p>
+        Each generation after the first is populated using genetic material
+        from the previous generation.  A few of the top performing individuals
+        are simply cloned into the next generation.  The rest of the generation
+        is created from randomly combining the genomes of two parents chosen
+        at random, biased toward the top scoring individuals.  Each child is
+        mutated slightly to stir things up.  The same individual can be chosen
+        as both parents of a child, in which case the slight mutation is the
+        only change to its genome.  The genome consists of all the biases and
+        weights of an individual's neural net.
+      </p>
       <h4>Links</h4>
       <ul>
         <li><a href="play.html">Play</a></li>
@@ -123,7 +189,6 @@
         <canvas id="o-smart-demo-board" width="150" height="150"></canvas>
       </div>
     </div>
-    <div class="clear"></div>
 
     <div id="export">
       <h4>Best net source:</h4>
