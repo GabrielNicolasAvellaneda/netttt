@@ -19,7 +19,6 @@ $(function () {
     var $workers = $('#workers');
     var $mutation = $('#mutation');
     var $generationBest = $('#generation-best');
-    var $generationTop = $('#generation-top-ten');
     var $generationAverage = $('#generation-average');
     var $leaders = [0,1,2,3,4,5,6,7,8,9].map(function (i) {
         return $('#leader-' + i.toString());
@@ -215,27 +214,20 @@ $(function () {
             topChanged(bestChanged);
         }
 
-        var sumTopTen = 0;
         var sum = 0;
-        generation.individuals.forEach(function (i, index) {
-            if (index < 10) {
-                sumTopTen += i.score;
-            }
+        generation.individuals.forEach(function (i) {
             sum += i.score;
         });
 
-        lastGenerationChanged(generation.individuals[0], sumTopTen / 10,
+        lastGenerationChanged(generation.individuals[0],
             sum / generation.individuals.length
         );
     }
 
-    function lastGenerationChanged(best, top, average) {
+    function lastGenerationChanged(best, average) {
         $generationBest.text($generationBest.data('template')
             .replace('{score}', best.score.toString())
             .replace('{age}', best.age.toString())
-        );
-        $generationTop.text($generationTop.data('template')
-            .replace('{score}', top.toFixed(1))
         );
         $generationAverage.text($generationAverage.data('template')
             .replace('{score}', average.toFixed(1))
