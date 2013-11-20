@@ -133,8 +133,8 @@ $(function () {
             if (importBox.val().length > 0) {
                 try {
                     var obj = $.parseJSON(importBox.val());
-                    var individual = NetTtt.Individual.import(obj);
-                    ai = new Ai.Neural(individual.net);
+                    var net = Neural.Net.import(obj);
+                    ai = new Ai.Neural(net);
                 }
                 catch (e) {
                     console.log(e.toString());

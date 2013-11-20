@@ -60,25 +60,57 @@ $(function () {
 
     reset();
 
-    function restore() {
-        return (localStorage[STORAGE_KEY]
-            ? NetTtt.Generation.import($.parseJSON(localStorage[STORAGE_KEY]))
-            : null
-        );
+    function importBest(obj) {
+        return {
+            score: obj.score,
+            age: obj.age,
+            id: obj.id,
+            generation: obj.generation,
+            net: Neural.Net.import(obj.net)
+        };
     }
 
-    function save(generation) {
-        localStorage[STORAGE_KEY] = JSON.stringify(generation.export());
+    function exportBest(best) {
+        return {
+            score: best.score,
+            age: best.age,
+            id: best.id,
+            generation: best.generation,
+            net: best.net.export()
+        };
+    }
+
+    function restore() {
+        if (!localStorage[STORAGE_KEY]) {
+            return false;
+        }
+
+        var obj = $.parseJSON(localStorage[STORAGE_KEY]);
+
+        generation = NetTtt.Generation.import(obj.generation);
+        best = importBest(obj.best);
+        jumps = obj.jumps.map(function (j) { return importBest(j); });
+        return true;
+    }
+
+    function save() {
+        localStorage[STORAGE_KEY] = JSON.stringify({
+            generation: generation.export(),
+            best: exportBest(best),
+            jumps: jumps.map(function (j) { return exportBest(j); })
+        });
     }
 
     function clear() {
-        localStorage.removeItem(STORAGE_KEY);
+        delete localStorage[STORAGE_KEY];
     }
 
     function reset() {
-        generation = restore() || NetTtt.Generation.newRandom();
-        best = null;
-        jumps = [];
+        if (!restore()) {
+            generation = NetTtt.Generation.newRandom();
+            best = null;
+            jumps = [];
+        }
 
         updateScores(true);
         update();
@@ -174,8 +206,8 @@ $(function () {
         score();
 
         generation = generation.next(mutationRate);
-        save(generation);
 
+        save();
         update();
         run();
     }
@@ -191,10 +223,14 @@ $(function () {
 
     function score() {
         var bestChanged = false;
-        if (!best || best.individual.compareTo(generation.individuals[0]) < 0) {
+        // This compareTo() call is a bit hacky, but it works.
+        if (!best || generation.individuals[0].compareTo(best) > 0) {
             best = {
-                individual: generation.individuals[0],
-                generation: generation.id
+                score: generation.individuals[0].score,
+                age: generation.individuals[0].age,
+                id: generation.individuals[0].id,
+                generation: generation.id,
+                net: generation.individuals[0].net
             };
             jumps.push(best);
 
@@ -215,15 +251,15 @@ $(function () {
         $jumps.empty();
         $jumps.append(jumps.map(function (j) {
             return $($jumps.data('template')
-                .replace('{score}', j.individual.score.toString())
-                .replace('{age}', j.individual.age.toString())
-                .replace('{id}', j.individual.id.toString())
+                .replace('{score}', j.score.toString())
+                .replace('{age}', j.age.toString())
+                .replace('{id}', j.id.toString())
                 .replace('{generation}', j.generation.toString())
             );
         }));
 
         if (bestChanged) {
-            $bestExport.text(best ? JSON.stringify(best.individual.export()) : '');
+            $bestExport.text(best ? JSON.stringify(best.net.export()) : '');
 
             resetDemos();
         }
@@ -264,7 +300,7 @@ $(function () {
             }
 
             var ai = (d.game.turn === d.player
-                ? new Ai.Neural(best.individual.net)
+                ? new Ai.Neural(best.net)
                 : d.opponent
             );
             d.game.move(ai.getMove(d.game));
