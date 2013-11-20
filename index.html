@@ -64,11 +64,9 @@
       <h2 id="current"
           data-unpaused="Running generation {generation}..."
           data-paused="Paused at generation {generation}"
-          data-pausing="Pausing..."
-      >&nbsp;</h2>
+          data-pausing="Pausing...">&nbsp;</h2>
       <div id="time"
-          data-template="Last generation took {time}ms"
-      >&nbsp;</div>
+          data-template="Last generation took {time}ms">&nbsp;</div>
       <span class="control">
         <input id="pause" type="button" value="Pause"
             data-paused="Resume" data-unpaused="Pause">
@@ -88,40 +86,26 @@
 
     <div id="stats">
       <div id="summary">
-        <h4>
-          Last generation:
-        </h4>
+        <h4>Last generation:</h4>
         <dl>
-          <dt>Top score:</dt>
-          <dd id="generation-best" data-template="{score} (age {age})"
-          >&nbsp;</dd>
+          <dt>High score:</dt>
+          <dd id="generation-best" data-template="{score}, age {age}: id {id}"
+              data-empty="&nbsp;">&nbsp;</dd>
           <dt>Average score:</dt>
-          <dd id="generation-average" data-template="{score}">&nbsp;</dd>
+          <dd id="generation-average" data-template="{score}"
+              data-empty="&nbsp;">&nbsp;</dd>
         </dl>
       </div>
-      <div id="leaderboard">
-        <h4>
-          Top ten nets:
-        </h4>
-        <ol id="leaders">
-          <li id="leader-0"
-              data-template="Score {score} (age {age}) from generation {generation}"
-          ></li>
-          <li id="leader-1"></li>
-          <li id="leader-2"></li>
-          <li id="leader-3"></li>
-          <li id="leader-4"></li>
-          <li id="leader-5"></li>
-          <li id="leader-6"></li>
-          <li id="leader-7"></li>
-          <li id="leader-8"></li>
-          <li id="leader-9"></li>
-        </ol>
+      <div id="achievements">
+        <h4>Evolutionary achievements:</h4>
+        <ol id="jumps"
+            data-template="&lt;li&gt;Score {score}, age {age}: id {id} from generation {generation}&lt;/li&gt;"
+        ></ol>
       </div>
     </div>
 
     <div id="demos">
-      <h4>Top net playing as:</h4>
+      <h4>Best net playing as:</h4>
       <div class="demo-container">
         <div class="demo-header">X vs. random</div>
         <canvas id="x-random-demo-board" width="150" height="150"></canvas>
@@ -142,8 +126,8 @@
     <div class="clear"></div>
 
     <div id="export">
-      <h4>Top net source:</h4>
-      <textarea id="top-export" rows="16" cols="64"></textarea>
+      <h4>Best net source:</h4>
+      <textarea id="best-export" rows="16" cols="64" readonly></textarea>
     </div>
 
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>

@@ -1,7 +1,8 @@
 "use strict";
 
 var generation;
-var top_;
+var best;
+var jumps;
 var paused = false;
 var workerCount = 4;
 var mutationRate = 0.01;
@@ -20,10 +21,8 @@ $(function () {
     var $mutation = $('#mutation');
     var $generationBest = $('#generation-best');
     var $generationAverage = $('#generation-average');
-    var $leaders = [0,1,2,3,4,5,6,7,8,9].map(function (i) {
-        return $('#leader-' + i.toString());
-    });
-    var $topExport = $('#top-export');
+    var $jumps = $('#jumps');
+    var $bestExport = $('#best-export');
 
     var receivedCount = 0;
     var beginTime = 0;
@@ -78,19 +77,15 @@ $(function () {
 
     function reset() {
         generation = restore() || NetTtt.Generation.newRandom();
-        top_ = [0,1,2,3,4,5,6,7,8,9].map(function () {
-            return {
-                individual: null,
-                generation: -1
-            };
-        });
+        best = null;
+        jumps = [];
 
+        updateScores(true);
+        update();
         run();
     }
 
     function run() {
-        update();
-
         if (paused) {
             return;
         }
@@ -125,10 +120,6 @@ $(function () {
         }
         else {
             $resetButton.attr('disabled', true);
-        }
-
-        if (!top_[0].individual) {
-            drawDemos();
         }
     }
 
@@ -184,33 +175,30 @@ $(function () {
 
         generation = generation.next(mutationRate);
         save(generation);
+
+        update();
         run();
     }
 
     function setPaused(p) {
         if (p !== paused) {
             paused = p;
+
+            update();
             run();
         }
     }
 
     function score() {
         var bestChanged = false;
-        var genIndex = 0;
-        var count = top_.length;
-        for (var i = 0; i < count; ++i) {
-            if (!top_[i].individual || top_[i].individual.compareTo(generation.individuals[genIndex]) < 0) {
-                top_.splice(i, 0, {
-                    individual: generation.individuals[genIndex++],
-                    generation: generation.id
-                });
+        if (!best || best.individual.compareTo(generation.individuals[0]) < 0) {
+            best = {
+                individual: generation.individuals[0],
+                generation: generation.id
+            };
+            jumps.push(best);
 
-                bestChanged = bestChanged || i === 0;
-            }
-        }
-        if (top_.length != count) {
-            top_ = top_.slice(0, count);
-            topChanged(bestChanged);
+            bestChanged = true;
         }
 
         var sum = 0;
@@ -218,42 +206,49 @@ $(function () {
             sum += i.score;
         });
 
-        lastGenerationChanged(generation.individuals[0],
+        updateScores(bestChanged, generation.individuals[0],
             sum / generation.individuals.length
         );
     }
 
-    function lastGenerationChanged(best, average) {
-        $generationBest.text($generationBest.data('template')
-            .replace('{score}', best.score.toString())
-            .replace('{age}', best.age.toString())
-        );
-        $generationAverage.text($generationAverage.data('template')
-            .replace('{score}', average.toFixed(1))
-        );
-    }
-
-    function topChanged(bestChanged) {
-        $leaders.forEach(function (l, i) {
-            l.text($leaders[0].data('template')
-                .replace('{score}', top_[i].individual.score.toString())
-                .replace('{age}', top_[i].individual.age.toString())
-                .replace('{generation}', top_[i].generation.toString())
+    function updateScores(bestChanged, generationBest, generationAverage) {
+        $jumps.empty();
+        $jumps.append(jumps.map(function (j) {
+            return $($jumps.data('template')
+                .replace('{score}', j.individual.score.toString())
+                .replace('{age}', j.individual.age.toString())
+                .replace('{id}', j.individual.id.toString())
+                .replace('{generation}', j.generation.toString())
             );
-        });
+        }));
 
         if (bestChanged) {
-            $topExport.text(JSON.stringify(top_[0].individual.export()));
+            $bestExport.text(best ? JSON.stringify(best.individual.export()) : '');
 
             resetDemos();
         }
+
+        $generationBest.text(typeof generationBest === 'undefined'
+            ? $generationBest.data('empty')
+            : $generationBest.data('template')
+                .replace('{score}', generationBest.score.toString())
+                .replace('{age}', generationBest.age.toString())
+                .replace('{id}', generationBest.id.toString())
+        );
+        $generationAverage.text(typeof generationAverage === 'undefined'
+            ? $generationAverage.data('empty')
+            : $generationAverage.data('template')
+                .replace('{score}', generationAverage.toFixed(1))
+        );
     }
 
     function resetDemos() {
         if (typeof demoTimerId !== 'undefined') {
             window.clearInterval(demoTimerId);
         }
-        demoTimerId = window.setInterval(updateDemos, 1000);
+        if (best) {
+            demoTimerId = window.setInterval(updateDemos, 1000);
+        }
 
         demos.forEach(function (d) {
             d.game = new Ttt.Game();
@@ -269,7 +264,7 @@ $(function () {
             }
 
             var ai = (d.game.turn === d.player
-                ? new Ai.Neural(top_[0].individual.net)
+                ? new Ai.Neural(best.individual.net)
                 : d.opponent
             );
             d.game.move(ai.getMove(d.game));
