@@ -84,7 +84,6 @@ $(function () {
                 generation: -1
             };
         });
-        paused = false;
 
         run();
     }
