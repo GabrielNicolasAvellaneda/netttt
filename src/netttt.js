@@ -179,14 +179,9 @@ var NetTtt = (function (NetTtt) {
         return new Individual(id, randomize(new Neural.Net(sizes), 1));
     }
 
-    Individual.prototype.reproduce = function Individual_reproduce(
-        id, mutationRate
-    ) {
-        // TODO: small random chance of adding/removing a whole internal layer,
-        // or a node within an internal layer (extra weights/thresholds made up
-        // randomly?).
-
-        return new Individual(id, randomize(this.net.clone(), mutationRate));
+    Individual.prototype.mutate = function Individual_mutate(mutationRate) {
+        randomize(this.net, mutationRate);
+        return this;
     };
 
     Individual.prototype.export = function Individual_export() {
@@ -273,9 +268,8 @@ var NetTtt = (function (NetTtt) {
                 ++i
             ) {
                 newIndividuals.push(
-                    oldIndividuals[reproducer].reproduce(
-                        newIndividuals.length, mutationRate
-                    )
+                    oldIndividuals[reproducer].clone(newIndividuals.length)
+                        .mutate(mutationRate)
                 );
             }
             if (children > 1) {
