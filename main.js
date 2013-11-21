@@ -60,26 +60,6 @@ $(function () {
 
     reset();
 
-    function importBest(obj) {
-        return {
-            score: obj.score,
-            age: obj.age,
-            id: obj.id,
-            generation: obj.generation,
-            net: Neural.Net.import(obj.net)
-        };
-    }
-
-    function exportBest(best) {
-        return {
-            score: best.score,
-            age: best.age,
-            id: best.id,
-            generation: best.generation,
-            net: best.net.export()
-        };
-    }
-
     function restore() {
         if (!localStorage[STORAGE_KEY]) {
             return false;
@@ -88,17 +68,27 @@ $(function () {
         var obj = $.parseJSON(localStorage[STORAGE_KEY]);
 
         generation = NetTtt.Generation.import(obj.generation);
-        best = importBest(obj.best);
-        jumps = obj.jumps.map(function (j) { return importBest(j); });
+        best = copyBest(obj.best, true);
+        jumps = obj.jumps.map(function (j) { return copyBest(j, true); });
         return true;
     }
 
     function save() {
         localStorage[STORAGE_KEY] = JSON.stringify({
             generation: generation.export(),
-            best: exportBest(best),
-            jumps: jumps.map(function (j) { return exportBest(j); })
+            best: copyBest(best, false),
+            jumps: jumps.map(function (j) { return copyBest(j, false); })
         });
+    }
+
+    function copyBest(b, import_) {
+        return {
+            score: b.score,
+            age: b.age,
+            id: b.id,
+            generation: b.generation,
+            net: (import_ ? Neural.Net.import(b.net) : b.net.export())
+        };
     }
 
     function clear() {
@@ -115,21 +105,6 @@ $(function () {
         updateScores(true);
         update();
         run();
-    }
-
-    function run() {
-        if (paused) {
-            return;
-        }
-
-        adjustWorkers();
-
-        receivedCount = 0;
-        beginTime = window.performance.now();
-
-        workers.forEach(function (w, i) {
-            w.postMessage(exportGeneration(i));
-        });
     }
 
     function update() {
@@ -155,6 +130,55 @@ $(function () {
         }
     }
 
+    function updateScores(bestChanged, generationBest, generationAverage) {
+        $jumps.empty();
+        $jumps.append(jumps.map(function (j) {
+            return $($jumps.data('template')
+                .replace('{score}', j.score.toString())
+                .replace('{age}', j.age.toString())
+                .replace('{id}', j.id.toString())
+                .replace('{generation}', j.generation.toString())
+            );
+        }));
+
+        if (bestChanged) {
+            $bestExport.text(best ? JSON.stringify(best.net.export()) : '');
+
+            resetDemos();
+        }
+
+        $generationBest.text(typeof generationBest === 'undefined'
+            ? $generationBest.data('empty')
+            : $generationBest.data('template')
+                .replace('{score}', generationBest.score.toString())
+                .replace('{age}', generationBest.age.toString())
+                .replace('{id}', generationBest.id.toString())
+        );
+        $generationAverage.text(typeof generationAverage === 'undefined'
+            ? $generationAverage.data('empty')
+            : $generationAverage.data('template')
+                .replace('{score}', generationAverage.toFixed(1))
+        );
+    }
+
+    function run() {
+        if (paused) {
+            return;
+        }
+
+        adjustWorkers();
+
+        receivedCount = 0;
+        beginTime = window.performance.now();
+
+        workers.forEach(function (w, i) {
+            w.postMessage(generation.export({
+                index: i,
+                total: workers.length
+            }));
+        });
+    }
+
     function adjustWorkers() {
         if (workers.length > workerCount) {
             var excess = workers.length - workerCount;
@@ -169,13 +193,6 @@ $(function () {
                 };
             }
         }
-    }
-
-    function exportGeneration(chunk) {
-        return generation.export({
-            index: chunk,
-            total: workers.length
-        });
     }
 
     function process(data) {
@@ -223,7 +240,7 @@ $(function () {
 
     function score() {
         var bestChanged = false;
-        // This compareTo() call is a bit hacky, but it works.
+        // HACK: we're comparing an individual to a "best", but it works.
         if (!best || generation.individuals[0].compareTo(best) > 0) {
             best = {
                 score: generation.individuals[0].score,
@@ -244,37 +261,6 @@ $(function () {
 
         updateScores(bestChanged, generation.individuals[0],
             sum / generation.individuals.length
-        );
-    }
-
-    function updateScores(bestChanged, generationBest, generationAverage) {
-        $jumps.empty();
-        $jumps.append(jumps.map(function (j) {
-            return $($jumps.data('template')
-                .replace('{score}', j.score.toString())
-                .replace('{age}', j.age.toString())
-                .replace('{id}', j.id.toString())
-                .replace('{generation}', j.generation.toString())
-            );
-        }));
-
-        if (bestChanged) {
-            $bestExport.text(best ? JSON.stringify(best.net.export()) : '');
-
-            resetDemos();
-        }
-
-        $generationBest.text(typeof generationBest === 'undefined'
-            ? $generationBest.data('empty')
-            : $generationBest.data('template')
-                .replace('{score}', generationBest.score.toString())
-                .replace('{age}', generationBest.age.toString())
-                .replace('{id}', generationBest.id.toString())
-        );
-        $generationAverage.text(typeof generationAverage === 'undefined'
-            ? $generationAverage.data('empty')
-            : $generationAverage.data('template')
-                .replace('{score}', generationAverage.toFixed(1))
         );
     }
 
