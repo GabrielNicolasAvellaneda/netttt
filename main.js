@@ -5,7 +5,7 @@ var best;
 var jumps;
 var paused = false;
 var workerCount = 4;
-var mutationRate = 0.01;
+var mutationRate = 0.03;
 var clonesPerGeneration = 3;
 var workers = [];
 
