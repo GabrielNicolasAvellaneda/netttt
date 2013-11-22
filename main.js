@@ -70,7 +70,7 @@ $(function () {
 
         var obj = $.parseJSON(localStorage[STORAGE_KEY]);
 
-        generation = NetTtt.Generation.import(obj.generation);
+        generation = Genetic.Generation.import(obj.generation);
         best = copyBest(obj.best, true);
         jumps = obj.jumps.map(function (j) { return copyBest(j, true); });
         return true;
@@ -100,7 +100,7 @@ $(function () {
 
     function reset() {
         if (!restore()) {
-            generation = NetTtt.Generation.newRandom();
+            generation = Genetic.Generation.newRandom();
             best = null;
             jumps = [];
         }

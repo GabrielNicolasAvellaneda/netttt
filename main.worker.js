@@ -1,7 +1,7 @@
 (function (global) {
     "use strict";
 
-    importScripts('src/ttt.js', 'src/neural.js', 'src/ai.js', 'src/netttt.js');
+    importScripts('src/ttt.js', 'src/neural.js', 'src/ai.js', 'src/genetic.js');
 
     global.onmessage = function (event) {
         var result = process(event.data);
@@ -9,7 +9,7 @@
     };
 
     function process(data) {
-        var generation = NetTtt.Generation.import(data);
+        var generation = Genetic.Generation.import(data);
         generation.run();
         return exportResult(generation);
     }

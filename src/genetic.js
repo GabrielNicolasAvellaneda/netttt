@@ -1,4 +1,4 @@
-var NetTtt = (function (NetTtt) {
+var Genetic = (function (Genetic) {
     "use strict";
 
     function play(x, o) {
@@ -221,7 +221,7 @@ var NetTtt = (function (NetTtt) {
     Individual.import = function Individual_import(obj) { // "static"
         if (typeof obj.id === 'undefined' || typeof obj.net === 'undefined') {
             throw new Error(
-                "NetTtt.Individual.import() needs an object with properties "
+                "Genetic.Individual.import() needs an object with properties "
                 + "id and net"
             );
         }
@@ -233,7 +233,7 @@ var NetTtt = (function (NetTtt) {
             || sizes[sizes.length - 1] !== 1
         ) {
             throw new Error(
-                "NetTtt.Individual.import() needs a Neural.Net.import() "
+                "Genetic.Individual.import() needs a Neural.Net.import() "
                 + "object with 18 input layer nodes and 1 output layer node"
             );
         }
@@ -341,7 +341,7 @@ var NetTtt = (function (NetTtt) {
     Generation.import = function Generation_import(obj) { // "static"
         if (typeof obj.id === 'undefined' || !Array.isArray(obj.individuals)) {
             throw new Error(
-                "NetTtt.Individual.import() needs an object with properties "
+                "Genetic.Individual.import() needs an object with properties "
                 + "id and Array individuals"
             );
         }
@@ -354,9 +354,9 @@ var NetTtt = (function (NetTtt) {
         }));
     }
 
-    NetTtt.play = play;
-    NetTtt.Individual = Individual;
-    NetTtt.Generation = Generation;
+    Genetic.play = play;
+    Genetic.Individual = Individual;
+    Genetic.Generation = Generation;
 
-    return NetTtt;
-}(NetTtt || {}));
+    return Genetic;
+}(Genetic || {}));
