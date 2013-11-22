@@ -312,10 +312,10 @@ $(function () {
         reset();
     });
 
-    function inputChanged($item, parse, min, max, _default) {
+    function inputChanged($item, parse, min, max, default_) {
         var x = parse($item.val());
         if (isNaN(x)) {
-            x = _default;
+            x = default_;
         }
         else if (x < min) {
             x = min;
