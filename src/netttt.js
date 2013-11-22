@@ -132,6 +132,35 @@ var NetTtt = (function (NetTtt) {
         return new Individual(id, this.net.clone());
     };
 
+    function heads() {
+        return Math.random() < 0.5;
+    }
+
+    function splice(dest, source) {
+        if (dest === source) {
+            return;
+        }
+
+        dest.eachNode(false, function (node, layerIndex, index) {
+            if (heads()) {
+                node.threshold = source.nodes[layerIndex][index].threshold;
+            }
+            for (var i = 0; i < node.weights.length; ++i) {
+                if (heads()) {
+                    node.weights[i]
+                        = source.nodes[layerIndex][index].weights[i]
+                    ;
+                }
+            }
+        });
+    }
+
+    Individual.prototype.reproduce = function Individual_reproduce(id, other) {
+        var child = this.clone(id);
+        splice(child.net, other.net);
+        return child;
+    };
+
     function realRand(min, max) {
         return Math.random() * (max - min) + min;
     }
@@ -150,8 +179,6 @@ var NetTtt = (function (NetTtt) {
     function randomize(
         net, modifyChance, minThresh, maxThresh, minWeight, maxWeight
     ) {
-        // TODO: change this so at low chances, we still modify at least one
-        // part of a node.
         modifyChance = (typeof modifyChance === 'undefined'
             ? 0.01
             : modifyChance
@@ -240,15 +267,21 @@ var NetTtt = (function (NetTtt) {
         this.individuals.sort(Individual.compareDescending);
     };
 
+    function select(pool) {
+        var x = Math.random();
+        x = x * x; // Bias the selection toward 0.
+
+        return pool[Math.floor(x * pool.length)];
+    }
+
     Generation.prototype.next = function Generation_next(
-        mutationRate, clones, children, id, oldIndividuals
+        mutationRate, clones, id
     ) {
         mutationRate = mutationRate || 0.05;
         clones = (typeof clones === 'undefined' ? 0 : clones);
-        children = children || 10;
         id = id || this.id + 1;
-        oldIndividuals = oldIndividuals || this.individuals;
 
+        var oldIndividuals = this.individuals;
         var newIndividuals = [];
         var i;
 
@@ -258,24 +291,12 @@ var NetTtt = (function (NetTtt) {
             );
         }
 
-        // Start with 10 children from the best, 9 from the second best, etc.,
-        // until we're eventually just asking each node for one child and we
-        // fill up on individuals.
-        var reproducer = 0;
         while (newIndividuals.length < oldIndividuals.length) {
-            for (i = 0;
-                i < children && newIndividuals.length < oldIndividuals.length;
-                ++i
-            ) {
-                newIndividuals.push(
-                    oldIndividuals[reproducer].clone(newIndividuals.length)
-                        .mutate(mutationRate)
-                );
-            }
-            if (children > 1) {
-                --children;
-            }
-            ++reproducer;
+            var a = select(oldIndividuals);
+            var b = select(oldIndividuals);
+            newIndividuals.push(
+                a.reproduce(newIndividuals.length, b).mutate()
+            );
         }
 
         return new Generation(id, newIndividuals);
