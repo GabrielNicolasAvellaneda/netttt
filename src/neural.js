@@ -145,7 +145,7 @@ var Neural = (function (Neural) {
         };
     };
 
-    Net.import = function Net_import(obj) { // "static"
+    Net.import = function Net_import(obj) {
         if (!Array.isArray(obj.thresholds) || !Array.isArray(obj.weights)) {
             throw new Error(
                 "Neural.Net.import() needs an object with Array properties "

@@ -66,7 +66,7 @@ var Genetic = (function (Genetic) {
     Individual.SCORE_MAX = 4298; // 4298 = sum of array lengths in testBoards.
 
     // By age, then score.
-    Individual.compare = function Individual_compare(a, b) { // "static"
+    Individual.compare = function Individual_compare(a, b) {
         if (a.age !== b.age) {
             return a.age - b.age;
         }
@@ -74,7 +74,7 @@ var Genetic = (function (Genetic) {
     };
 
     Individual.compareDescending = function Individual_compareDescending(a, b
-    ) { // "static"
+    ) {
         return Individual.compare(b, a);
     };
 
@@ -201,7 +201,7 @@ var Genetic = (function (Genetic) {
         return net;
     }
 
-    Individual.newRandom = function Individual_newRandom(id) { // "static"
+    Individual.newRandom = function Individual_newRandom(id) {
         var sizes = [18, 27, 9, 1];
         return new Individual(id, randomize(new Neural.Net(sizes), 1));
     }
@@ -218,7 +218,7 @@ var Genetic = (function (Genetic) {
         };
     };
 
-    Individual.import = function Individual_import(obj) { // "static"
+    Individual.import = function Individual_import(obj) {
         if (typeof obj.id === 'undefined' || typeof obj.net === 'undefined') {
             throw new Error(
                 "Genetic.Individual.import() needs an object with properties "
@@ -302,7 +302,6 @@ var Genetic = (function (Genetic) {
         return new Generation(id, newIndividuals);
     }
 
-    // "static"
     Generation.newRandom = function Generation_newRandom(id, imported, size) {
         id = id || 0;
         imported = imported || [];
@@ -338,7 +337,7 @@ var Genetic = (function (Genetic) {
         };
     }
 
-    Generation.import = function Generation_import(obj) { // "static"
+    Generation.import = function Generation_import(obj) {
         if (typeof obj.id === 'undefined' || !Array.isArray(obj.individuals)) {
             throw new Error(
                 "Genetic.Individual.import() needs an object with properties "
