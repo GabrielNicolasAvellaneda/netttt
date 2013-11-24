@@ -201,8 +201,7 @@ var Genetic = (function (Genetic) {
         return net;
     }
 
-    Individual.newRandom = function Individual_newRandom(id) {
-        var sizes = [18, 27, 9, 1];
+    Individual.newRandom = function Individual_newRandom(id, sizes) {
         return new Individual(id, randomize(new Neural.Net(sizes), 1));
     }
 
@@ -302,10 +301,13 @@ var Genetic = (function (Genetic) {
         return new Generation(id, newIndividuals);
     }
 
-    Generation.newRandom = function Generation_newRandom(id, imported, size) {
+    Generation.newRandom = function Generation_newRandom(
+        size, sizes, id, imported
+    ) {
+        size = size || 100;
+        sizes = sizes || [18, 27, 9, 1];
         id = id || 0;
         imported = imported || [];
-        size = size || 100;
 
         var individuals = new Array(size);
         var i;
@@ -314,7 +316,7 @@ var Genetic = (function (Genetic) {
             individuals[i].id = i;
         }
         for (; i < size; ++i) {
-            individuals[i] = Individual.newRandom(i);
+            individuals[i] = Individual.newRandom(i, sizes);
         }
         return new Generation(id, individuals);
     }

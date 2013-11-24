@@ -5,6 +5,8 @@ var best;
 var jumps;
 var paused = false;
 var workerCount = 4;
+var generationSize = 100;
+var individualSizes = [18, 27, 9, 1];
 var mutationRate = 0.03;
 var clonesPerGeneration = 3;
 var workers = [];
@@ -100,7 +102,7 @@ $(function () {
 
     function reset() {
         if (!restore()) {
-            generation = Genetic.Generation.newRandom();
+            generation = Genetic.Generation.newRandom(generationSize, individualSizes);
             best = null;
             jumps = [];
         }
