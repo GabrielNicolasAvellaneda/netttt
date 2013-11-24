@@ -1,6 +1,6 @@
 /*
    netttt - evolving neural networks to play tic tac toe
-            <https://github.com/chazomaticus/netttt>
+            <http://chazomaticus.github.io/netttt/>
    Copyright 2013 Charles Lindsay
 
    netttt is free software: you can redistribute it and/or modify it under the
