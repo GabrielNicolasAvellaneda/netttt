@@ -29,6 +29,13 @@
       #export {
         clear: left;
       }
+      #copyright {
+        clear: both;
+        margin: 1em;
+        font-size: small;
+        text-align: center;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -215,6 +222,16 @@
     <div id="export">
       <h4>Best net source:</h4>
       <textarea id="best-export" rows="16" cols="64" readonly></textarea>
+    </div>
+
+    <div id="copyright">
+      <a href="https://github.com/chazomaticus/netttt">netttt</a>
+      <br>
+      Copyright 2013 Charles Lindsay
+      <br>
+      <a href="https://gnu.org/licenses/gpl-3.0-standalone.html">
+        Licensed under the terms of the GNU GPL
+      </a>
     </div>
 
     <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
