@@ -41,6 +41,12 @@
         workers to parallelize the work, and local storage to save your
         progress.
       </p>
+      <h4>Links</h4>
+      <ul>
+        <li><a href="play.html">Play</a></li>
+        <li><a href="test.html">Tests</a></li>
+        <li><a href="https://github.com/chazomaticus/netttt">Code</a></li>
+      </ul>
       <h4>How does it work?</h4>
       <p>
         First, we generate every tic tac toe game state where the next move has
@@ -118,12 +124,23 @@
         only change to its genome.  The genome consists of all the biases and
         weights of an individual's neural net.
       </p>
-      <h4>Links</h4>
+      <h4>Room for improvement</h4>
       <ul>
-        <li><a href="play.html">Play</a></li>
-        <li><a href="test.html">Tests</a></li>
-        <li><a href="https://github.com/chazomaticus/netttt">Code</a></li>
-      </ul>
+        <li>There are many performance optimizations that could be made.</li>
+        <li>
+          Tweaking the neural nets' workings, for example by using a more
+          complex activation function, might yield some improvements.
+        </li>
+        <li>
+          Tweaking the neural nets' geometry might also yield some interesting
+          results.
+        </li>
+        <li>
+          After a number of generations, we run out of significant genetic
+          variation.  It's hard to get out of a local maximum when you aren't
+          looking far enough around for a better solution.  Perhaps a way to
+          introduce more variation at each generation would help.
+        </li>
     </div>
 
     <div id="status">
