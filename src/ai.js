@@ -102,9 +102,8 @@ var Ai = (function (Ai) {
     // We give a winning position a high score, then count the number of ways a
     // player could win at the current position.
     Smart.evaluate = function Smart_evaluate(board, winner) {
-        if (typeof winner === 'undefined') {
-            winner = Ttt.winner(board);
-        }
+        winner = (typeof winner === 'undefined' ? Ttt.winner(board) : winner);
+
         if (winner) {
             return sign(winner === Ttt.TIE ? 0 : winner) * 100;
         }

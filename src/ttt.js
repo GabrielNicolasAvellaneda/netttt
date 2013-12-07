@@ -204,8 +204,7 @@ var Ttt = (function (Ttt) {
         ctx.stroke();
     }
 
-    Game.prototype.draw = function Game_draw(
-        ctx, w, h, x, y, highlightSquare
+    Game.prototype.draw = function Game_draw(ctx, w, h, x, y, highlightSquare
     ) {
         ctx.save();
         ctx.translate(x || 0, y || 0);

@@ -70,14 +70,8 @@ var Neural = (function (Neural) {
     Net.prototype.eachNode = function Net_eachNode(visitOutput, callback) {
         var lastLayer = this.nodes.length - (visitOutput ? 0 : 1);
         for (var layerIndex = 0; layerIndex < lastLayer; ++layerIndex) {
-            for (var index = 0; index < this.nodes[layerIndex].length; ++index
-            ) {
-                callback(
-                    this.nodes[layerIndex][index],
-                    layerIndex,
-                    index,
-                    this.nodes
-                );
+            for (var i = 0; i < this.nodes[layerIndex].length; ++i) {
+                callback(this.nodes[layerIndex][i], layerIndex, i, this.nodes);
             }
         }
     };
@@ -166,9 +160,8 @@ var Neural = (function (Neural) {
 
     Net.import = function Net_import(obj) {
         if (!Array.isArray(obj.thresholds) || !Array.isArray(obj.weights)) {
-            throw new Error(
-                "Neural.Net.import() needs an object with Array properties "
-                + "thresholds and weights"
+            throw new Error("Neural.Net.import() needs an object with Array "
+                + "properties thresholds and weights"
             );
         }
 

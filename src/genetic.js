@@ -30,8 +30,7 @@ var Genetic = (function (Genetic) {
         do {
             var move = players[game.turn].getMove(game);
             if (move < 0 || move >= 9 || game.getPiece(move) !== 0) {
-                throw new Error(
-                    "AI chose invalid move " + move.toString()
+                throw new Error("AI chose invalid move " + move.toString()
                     + " in " + game.toString()
                 );
             }
@@ -56,8 +55,9 @@ var Genetic = (function (Genetic) {
 
         var emptySquares = game.emptySquares();
 
-        if (visited[game.board] || game.winner() || emptySquares.length <= 1)
+        if (visited[game.board] || game.winner() || emptySquares.length <= 1) {
             return boards;
+        }
 
         boards[9 - emptySquares.length].push({
             board: game.board,
@@ -238,9 +238,8 @@ var Genetic = (function (Genetic) {
 
     Individual.import = function Individual_import(obj) {
         if (typeof obj.id === 'undefined' || typeof obj.net === 'undefined') {
-            throw new Error(
-                "Genetic.Individual.import() needs an object with properties "
-                + "id and net"
+            throw new Error("Genetic.Individual.import() needs an object with "
+                + "properties id and net"
             );
         }
 
@@ -250,9 +249,9 @@ var Genetic = (function (Genetic) {
         if (sizes.length < 1 || sizes[0] !== 18
             || sizes[sizes.length - 1] !== 1
         ) {
-            throw new Error(
-                "Genetic.Individual.import() needs a Neural.Net.import() "
-                + "object with 18 input layer nodes and 1 output layer node"
+            throw new Error("Genetic.Individual.import() needs a "
+                + "Neural.Net.import() object with 18 input layer nodes and 1 "
+                + "output layer node"
             );
         }
 
@@ -360,9 +359,8 @@ var Genetic = (function (Genetic) {
 
     Generation.import = function Generation_import(obj) {
         if (typeof obj.id === 'undefined' || !Array.isArray(obj.individuals)) {
-            throw new Error(
-                "Genetic.Individual.import() needs an object with properties "
-                + "id and Array individuals"
+            throw new Error("Genetic.Individual.import() needs an object with "
+                + "properties id and Array individuals"
             );
         }
 
