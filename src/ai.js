@@ -20,6 +20,7 @@
 var Ai = (function (Ai) {
     "use strict";
 
+    // An AI that chooses randomly from available moves.
     function Random() {
     }
 
@@ -87,8 +88,14 @@ var Ai = (function (Ai) {
         });
     }
 
+    // An AI that plays the game with some intelligence.  With maxDepth 7, it
+    // plays a perfect game.  With maxDepth 1, it simply picks the move that
+    // looks best without looking into the future.  Because it's such a simple
+    // game and we've tweaked the evaluation function to be pretty decent, it
+    // often makes the same move in either case.
     function Smart(maxDepth) {
         // Default to whole game (2 in first moves table + 7 is the whole 9).
+        // Might as well -- it's pretty quick.
         this.maxDepth = maxDepth || 7;
     }
 
@@ -225,6 +232,7 @@ var Ai = (function (Ai) {
     // entirely predictable.
     Smart.prototype.getMove = Ai_getMove;
 
+    // An AI that uses a Neural.Net to pick a move.
     function Neural(net) {
         this.net = net;
     }

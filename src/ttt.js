@@ -25,6 +25,12 @@ var Ttt = (function (Ttt) {
     var O = 3;
     var TIE = -1;
 
+    // Boards are simply integers.  The first two bits encode the piece at
+    // square 0 (top left), the next two bits are square 1, etc.  Squares are
+    // 0-8 left to right, top to bottom.  If a square's bits are both 0, that
+    // square is empty.  If the less significant bit is set, it's occupied.
+    // The occupying player is determined by the more significant bit: X if not
+    // set or O if set.
     function newBoard() {
         return 0;
     }
@@ -95,6 +101,11 @@ var Ttt = (function (Ttt) {
         return 0;
     }
 
+    // A convenient wrapper around a board and whose turn it is.  Also holds
+    // the game's state going back through time.  Ignoring the history, the
+    // current board state will tell you whose turn it is assuming the game has
+    // been played according to the rules, but this gives us some convenience
+    // and lets us bend the rules if we want to.
     function Game(board, turn, history) {
         board = (typeof board === 'undefined' ? newBoard() : board);
         turn = turn || (emptySquares(board).length % 2 === 0 ? O : X);

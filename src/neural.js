@@ -178,8 +178,6 @@ var Neural = (function (Neural) {
         return net;
     };
 
-    // TODO: some way to mutate a net's dimensions.
-
     Neural.Net = Net;
 
     return Neural;
