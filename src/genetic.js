@@ -20,27 +20,6 @@
 var Genetic = (function (Genetic) {
     "use strict";
 
-    function play(x, o) {
-        var players = {};
-        players[Ttt.X] = x;
-        players[Ttt.O] = o;
-
-        var game = new Ttt.Game();
-        var winner;
-        do {
-            var move = players[game.turn].getMove(game);
-            if (move < 0 || move >= 9 || game.getPiece(move) !== 0) {
-                throw new Error("AI chose invalid move " + move.toString()
-                    + " in " + game.toString()
-                );
-            }
-
-            game.move(move);
-        } while (!(winner = game.winner()));
-
-        return winner;
-    }
-
     var testBoards = null;
 
     // We want to test our neural nets against the smart AI for every relevant
@@ -372,7 +351,6 @@ var Genetic = (function (Genetic) {
         }));
     }
 
-    Genetic.play = play;
     Genetic.Individual = Individual;
     Genetic.Generation = Generation;
 

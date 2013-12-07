@@ -260,6 +260,29 @@ var Ttt = (function (Ttt) {
         ctx.restore();
     };
 
+    // A simple, synchronous driver for playing games.  Useful mostly for
+    // testing purposes.
+    function play(x, o) {
+        var players = {};
+        players[X] = x;
+        players[O] = o;
+
+        var game = new Game();
+        var winner;
+        do {
+            var move = players[game.turn].getMove(game);
+            if (move < 0 || move >= 9 || game.getPiece(move) !== 0) {
+                throw new Error("AI chose invalid move " + move.toString()
+                    + " in " + game.toString()
+                );
+            }
+
+            game.move(move);
+        } while (!(winner = game.winner()));
+
+        return winner;
+    }
+
     Ttt.X = X;
     Ttt.O = O;
     Ttt.TIE = TIE;
@@ -272,6 +295,7 @@ var Ttt = (function (Ttt) {
     Ttt.move = move;
     Ttt.winner = winner;
     Ttt.Game = Game;
+    Ttt.play = play;
 
     return Ttt;
 }(Ttt || {}));
